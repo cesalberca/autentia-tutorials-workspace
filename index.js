@@ -1,4 +1,4 @@
-const doctoc = require('doctoc');
+const npmRun = require('npm-run');
 const path = require('path');
 
-doctoc.transformAndSave(path.join(__dirname, 'posts'), 'github', 100, 'Índice');
+npmRun.exec('doctoc posts');
