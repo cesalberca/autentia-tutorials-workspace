@@ -1,0 +1,16 @@
+{
+  "name": "tutorials-workspace",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pre-publish": "./node_modules/.bin/doctoc --title '**Índice**' posts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "doctoc": "^1.3.0"
+  }
+}
