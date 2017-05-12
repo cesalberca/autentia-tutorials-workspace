@@ -2,17 +2,17 @@
 title: Creación de API REST con JAX-RS como módulo OSGi
 ---
 
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
+- [Introducción](#introducci%C3%B3n)
+- [Arquitectura API REST](#arquitectura-api-rest)
+  - [GET](#get)
+  - [POST](#post)
+  - [DELETE](#delete)
+  - [PUT y PATCH](#put-y-patch)
 - [JAX-RS](#jax-rs)
-  - [Arquitectura API REST](#arquitectura-api-rest)
-    - [GET](#get)
-    - [POST](#post)
-    - [DELETE](#delete)
-    - [PUT y PATCH](#put-y-patch)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
