@@ -1,21 +1,20 @@
 const npmRun = require('npm-run');
-const path = require('path');
 const marked = require('marked');
 const fs = require('mz/fs');
+const colors = require('colors');
 const { basename, resolve } = require('path');
-
-console.log('Processing posts')
-npmRun.exec('./node_modules/.bin/doctoc posts');
-console.log('Parsing to hmtl')
 
 async function init() {
   const path = './posts';
   const files = await fs.readdir(path);
-  console.log(`Converting ${files.length} article/s`);
+  console.log(`Converting ${files.length} article/s`.bold);
+  console.log('Generating indexes...'.blue);
+  await generateIndexes();
+  console.log('Indexes generated', 'succesfully'.green);
 
   files.forEach(async (file) => {
-    try {
 
+    try {
       const content = await fs.readFile(resolve(path, file), 'utf-8');
       const parsedContent = await parseToHtml(content);
       console.log(`Parsed file ${file}`);
@@ -42,6 +41,14 @@ async function init() {
 function parseToHtml(content) {
   return new Promise((resolve, reject) => {
     resolve(marked.parse(content));
+  });
+}
+
+function generateIndexes() {
+  return new Promise((resolve, reject) => {
+    npmRun.exec('./node_modules/.bin/doctoc posts', () => {
+      resolve();
+    });
   });
 }
 
