@@ -4,32 +4,40 @@ const fs = require('mz/fs');
 const colors = require('colors');
 const { basename, resolve } = require('path');
 
+const path = './posts';
+const output = './dist'
+
 async function init() {
-  const path = './posts';
+  try {
+    console.log('Generating indexes...'.blue);
+    await generateIndexes();
+    console.log('Indexes generated', 'succesfully'.green);
+  } catch (error) {
+    console.log(`Couldn't generate indexes`);
+  }
+
   const files = await fs.readdir(path);
   console.log(`Converting ${files.length} article/s`.bold);
-  console.log('Generating indexes...'.blue);
-  await generateIndexes();
-  console.log('Indexes generated', 'succesfully'.green);
 
   files.forEach(async (file) => {
+    console.log(`• ${file}`);
 
     try {
       const content = await fs.readFile(resolve(path, file), 'utf-8');
       const parsedContent = await parseToHtml(content);
-      console.log(`Parsed file ${file}`);
+      console.log(`\t - Parsed`.green);
 
-      if (await !fs.exists('./dist')) {
-        fs.mkdir('./dist');
+      if (await !fs.exists(`./${output}`)) {
+        fs.mkdir(`${output}`);
       }
 
-      const fileOutput = resolve(__dirname, 'dist', `${basename(file, '.md')}.html`);
+      const fileOutput = resolve(__dirname, output, `${basename(file, '.md')}.html`);
       fs.writeFile(fileOutput, parsedContent)
       .then(() => {
-        console.log(`Parsed file ${file}`);
+        console.log(`\t - Saved`.green);
       })
       .catch((e) => {
-        console.log(`Couldn't write ${file} to disk`);
+        console.log(`\tCouldn't write ${file} to disk`.red);
       });
 
     } catch (error) {
