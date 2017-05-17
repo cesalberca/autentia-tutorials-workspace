@@ -2,48 +2,57 @@ const npmRun = require('npm-run');
 const marked = require('marked');
 const fs = require('mz/fs');
 const colors = require('colors');
-const { basename, resolve } = require('path');
+const path = require('path');
 
-const path = './posts';
+const input = './posts';
 const output = './dist'
 
 async function init() {
+  if (await !fs.exists(`./${output}`)) {
+    fs.mkdir(`${output}`);
+  }
+
   try {
     console.log('Generating indexes...'.blue);
     await generateIndexes();
     console.log('Indexes generated', 'succesfully'.green);
+    console.log('');
   } catch (error) {
     console.log(`Couldn't generate indexes`);
   }
 
-  const files = await fs.readdir(path);
-  console.log(`Converting ${files.length} article/s`.bold);
+  const posts = await fs.readdir(input);
+  console.log(`Converting ${posts.length} article/s...`.blue);
 
-  files.forEach(async (file) => {
-    console.log(`• ${file}`);
+  await convertPosts(posts);
+  console.log(' DONE '.black.bgGreen);
+  console.log('');
+}
 
-    try {
-      const content = await fs.readFile(resolve(path, file), 'utf-8');
-      const parsedContent = await parseToHtml(content);
-      console.log(`\t - Parsed`.green);
+function convertPosts(posts) {
+  return new Promise((resolve, reject) => {
+    posts.forEach(async (post) => {
+      try {
+        console.log(`• ${post}`);
 
-      if (await !fs.exists(`./${output}`)) {
-        fs.mkdir(`${output}`);
+        const content = await fs.readFile(path.resolve(input, post), 'utf-8');
+        const parsedContent = await parseToHtml(content);
+        console.log(`  - Parsed`.green);
+
+        await writePost(post, parsedContent);
+        console.log(`  - Saved`.green);
+        console.log('');
+        resolve();
+      } catch (error) {
+        reject(error.red);
       }
-
-      const fileOutput = resolve(__dirname, output, `${basename(file, '.md')}.html`);
-      fs.writeFile(fileOutput, parsedContent)
-      .then(() => {
-        console.log(`\t - Saved`.green);
-      })
-      .catch((e) => {
-        console.log(`\tCouldn't write ${file} to disk`.red);
-      });
-
-    } catch (error) {
-      console.error(error);
-    }
+    });
   });
+}
+
+async function writePost(file, content) {
+  const fileOutput = path.resolve(__dirname, output, `${path.basename(file, '.md')}.html`);
+  return fs.writeFile(fileOutput, content);
 }
 
 function parseToHtml(content) {
