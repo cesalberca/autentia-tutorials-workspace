@@ -20,7 +20,7 @@ async function init() {
     console.log('Indexes generated', 'succesfully'.green);
     console.log('');
   } catch (error) {
-    console.log(`Couldn't generate indexes`);
+    console.log(`Couldn't generate indexes. Error: ${error}`.red);
   }
 
   const postsWithGitkeep = await fs.readdir(input);
