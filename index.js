@@ -15,10 +15,7 @@ async function init() {
   configMarked();
 
   try {
-    console.log('Generating indexes...'.blue);
     await generateIndexes();
-    console.log('Indexes generated', 'succesfully'.green);
-    console.log('');
   } catch (error) {
     console.log(`Couldn't generate indexes. Error: ${error}`.red);
   }
@@ -34,22 +31,18 @@ async function init() {
 }
 
 function convertPost(post) {
-  return new Promise((resolve, reject) => {
-
-    fs.readFile(path.resolve(input, post), 'utf-8')
-    .then(content => {
-      console.log(`• ${post}`);
-      console.log(`  - Parsed`.green);
-      return parseToHtml(content)
-    })
-    .then(parsedContent => {
-      console.log(`  - Saved`.green);
-      console.log('');
-      savePost(post, parsedContent)
-      resolve()
-    })
-    .catch(error => console.log(error.red));
-  });
+  return fs.readFile(path.resolve(input, post), 'utf-8')
+  .then(content => {
+    console.log(`• ${post}`);
+    console.log(`  - Parsed`.green);
+    return parseToHtml(content)
+  })
+  .then(parsedContent => {
+    console.log(`  - Saved`.green);
+    console.log('');
+    savePost(post, parsedContent)
+  })
+  .catch(error => console.log(error.red));
 }
 
 async function savePost(file, content) {
@@ -63,7 +56,10 @@ async function parseToHtml(content) {
 
 function generateIndexes() {
   return new Promise((resolve, reject) => {
+    console.log('Generating indexes...'.blue);
     npmRun.exec('./node_modules/.bin/doctoc posts', () => {
+      console.log('Indexes generated', 'succesfully'.green);
+      console.log('');
       resolve();
     });
   });
