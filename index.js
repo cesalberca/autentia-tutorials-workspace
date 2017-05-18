@@ -45,14 +45,14 @@ function convertPost(post) {
     .then(parsedContent => {
       console.log(`  - Saved`.green);
       console.log('');
-      saveParsedPost(post, parsedContent)
+      savePost(post, parsedContent)
       resolve()
     })
     .catch(error => console.log(error.red));
   });
 }
 
-async function saveParsedPost(file, content) {
+async function savePost(file, content) {
   const fileOutput = path.resolve(__dirname, output, `${path.basename(file, '.md')}.html`);
   return fs.writeFile(fileOutput, content);
 }
