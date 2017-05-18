@@ -21,26 +21,27 @@ async function init() {
   }
 
   const postsWithGitkeep = await fs.readdir(input);
-  const posts = postsWithGitkeep.filter(post => post !== '.gitkeep');
+  const relativePathPosts = postsWithGitkeep.filter(post => post !== '.gitkeep');
+  const posts = relativePathPosts.map(post => path.resolve(input, post));
   console.log(`Converting ${posts.length} article/s...`.blue);
 
   let postsPromise = posts.map(convertPost);
   await Promise.all(postsPromise);
+  console.log('');
   console.log(' DONE '.black.bgGreen);
   console.log('');
 }
 
-function convertPost(post) {
-  return fs.readFile(path.resolve(input, post), 'utf-8')
+function convertPost(postPath) {
+  return fs.readFile(postPath, 'utf-8')
   .then(content => {
-    console.log(`• ${post}`);
+    console.log(`• ${path.basename(postPath)}`);
     console.log(`  - Parsed`.green);
     return parseToHtml(content)
   })
   .then(parsedContent => {
     console.log(`  - Saved`.green);
-    console.log('');
-    savePost(post, parsedContent)
+    savePost(postPath, parsedContent)
   })
   .catch(error => console.log(error.red));
 }
