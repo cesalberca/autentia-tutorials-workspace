@@ -24,33 +24,31 @@ async function init() {
   const posts = await fs.readdir(input);
   console.log(`Converting ${posts.length} article/s...`.blue);
 
-  await convertPosts(posts);
+  let postsPromise = posts.map(convertPost);
+  await Promise.all(postsPromise);
   console.log(' DONE '.black.bgGreen);
   console.log('');
 }
 
-function convertPosts(posts) {
+function convertPost(post) {
   return new Promise((resolve, reject) => {
-    posts.forEach(async (post) => {
-      try {
-        console.log(`• ${post}`);
 
-        const content = await fs.readFile(path.resolve(input, post), 'utf-8');
-        const parsedContent = await parseToHtml(content);
-        console.log(`  - Parsed`.green);
-
-        await writePost(post, parsedContent);
-        console.log(`  - Saved`.green);
-        console.log('');
-        resolve();
-      } catch (error) {
-        reject(error.red);
-      }
+    fs.readFile(path.resolve(input, post), 'utf-8')
+    .then(content => {
+      console.log(`• ${post}`);
+      console.log(`  - Parsed`.green);
+      return parseToHtml(content)
+    })
+    .then(parsedContent => {
+      console.log(`  - Saved`.green);
+      console.log('');
+      saveParsedPost(post, parsedContent)
+      resolve()
     });
   });
 }
 
-async function writePost(file, content) {
+async function saveParsedPost(file, content) {
   const fileOutput = path.resolve(__dirname, output, `${path.basename(file, '.md')}.html`);
   return fs.writeFile(fileOutput, content);
 }
@@ -67,6 +65,26 @@ function generateIndexes() {
       resolve();
     });
   });
+}
+
+function makeLinksTargetBlank() {
+  const myRenderer = new marked.Renderer();
+
+  myRenderer.link = (href, title, text) => {
+    let external = /^https?:\/\/.+$/.test(href);
+    let newWindow = external || title === 'newWindow';
+    let out = `<a href="${href}"`;
+
+    if (newWindow) {
+      out += ` target="_blank"`;
+    }
+
+    if (title && title !== 'newWindow') {
+      out += ` title="${title}"`;
+    }
+
+    return out += `>${text}</a>`;
+  };
 }
 
 init();
