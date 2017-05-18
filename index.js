@@ -23,7 +23,8 @@ async function init() {
     console.log(`Couldn't generate indexes`);
   }
 
-  const posts = await fs.readdir(input);
+  const postsWithGitkeep = await fs.readdir(input);
+  const posts = postsWithGitkeep.filter(post => post !== '.gitkeep');
   console.log(`Converting ${posts.length} article/s...`.blue);
 
   let postsPromise = posts.map(convertPost);
