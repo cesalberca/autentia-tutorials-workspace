@@ -1,2 +1,4 @@
 node_modules
 dist
+posts/*
+!posts/.gitkeep
