@@ -47,7 +47,8 @@ function convertPost(post) {
       console.log('');
       saveParsedPost(post, parsedContent)
       resolve()
-    });
+    })
+    .catch(error => console.log(error.red));
   });
 }
 
