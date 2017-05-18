@@ -53,10 +53,8 @@ async function saveParsedPost(file, content) {
   return fs.writeFile(fileOutput, content);
 }
 
-function parseToHtml(content) {
-  return new Promise((resolve, reject) => {
-    resolve(marked.parse(content));
-  });
+async function parseToHtml(content) {
+  return marked.parse(content);
 }
 
 function generateIndexes() {
