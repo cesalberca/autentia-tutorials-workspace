@@ -12,6 +12,8 @@ async function init() {
     fs.mkdir(`${output}`);
   }
 
+  configMarked();
+
   try {
     console.log('Generating indexes...'.blue);
     await generateIndexes();
@@ -65,7 +67,7 @@ function generateIndexes() {
   });
 }
 
-function makeLinksTargetBlank() {
+function configMarked() {
   const myRenderer = new marked.Renderer();
 
   myRenderer.link = (href, title, text) => {
@@ -83,6 +85,8 @@ function makeLinksTargetBlank() {
 
     return out += `>${text}</a>`;
   };
+
+   marked.setOptions({renderer: myRenderer});
 }
 
 init();
