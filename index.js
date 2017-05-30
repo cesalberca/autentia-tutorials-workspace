@@ -5,7 +5,11 @@ const colors = require('colors');
 const path = require('path');
 
 const input = './posts';
-const output = './dist'(async () => {
+const output = './dist';
+
+init();
+
+async function init() {
   if (await !fs.exists(`./${output}`)) {
     fs.mkdir(`${output}`);
   }
@@ -30,7 +34,7 @@ const output = './dist'(async () => {
   console.log('');
   console.log(' DONE '.black.bgGreen);
   console.log('');
-})();
+}
 
 function convertPost(postPath) {
   return fs
