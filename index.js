@@ -4,16 +4,13 @@ const fs = require('mz/fs');
 const colors = require('colors');
 const path = require('path');
 
-const input = './posts';
-const output = './dist';
+const input = 'posts';
+const output = 'dist';
 
 init();
 
 async function init() {
-  if (await !fs.exists(`./${output}`)) {
-    fs.mkdir(`${output}`);
-  }
-
+  await createOutputDirIfNeeded();
   configMarked();
 
   try {
@@ -34,6 +31,15 @@ async function init() {
   console.log('');
   console.log(' DONE '.black.bgGreen);
   console.log('');
+}
+
+async function createOutputDirIfNeeded() {
+  const doesDirExist = await fs.exists(path.resolve(__dirname, output));
+
+  if (!await fs.exists(path.resolve(__dirname, output))) {
+    await fs.mkdir(path.resolve(__dirname, output));
+    return await fs.writeFile(path.resolve(__dirname, output, '.gitkeep'), '');
+  }
 }
 
 function convertPost(postPath) {
