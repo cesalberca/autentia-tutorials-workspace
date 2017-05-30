@@ -1,0 +1,4 @@
+- [ ] Fix links on table of contents when there are accents
+- [ ] Remove headers from doc-toc
+- [ ] Add `<!--more-->` tag and move introduction to top
+- [ ] Change all title to h2 and remove any h1 title
