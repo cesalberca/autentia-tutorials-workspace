@@ -1,4 +1,4 @@
-# Autentia Tutorials Workspace
+# Autentia Tutorials Workspace
 
 Formatter to parse posts in [Markdown](https://guides.github.com/features/mastering-markdown/) to the right format following [Autentia's tutorial template rules](https://docs.google.com/document/d/1CIR4p8NAiPv-0cDisPF42zxCeBRxZekOa1sLdEMuNBQ/edit).
 
