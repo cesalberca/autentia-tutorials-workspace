@@ -28,9 +28,7 @@ async function init() {
 
   let postsPromise = posts.map(convertPost);
   await Promise.all(postsPromise);
-  console.log('');
-  console.log(' DONE '.black.bgGreen);
-  console.log('');
+  console.log('\n DONE '.black.bgGreen + '\n');
 }
 
 async function createOutputDirIfNeeded() {
@@ -40,6 +38,38 @@ async function createOutputDirIfNeeded() {
     await fs.mkdir(path.resolve(__dirname, output));
     return await fs.writeFile(path.resolve(__dirname, output, '.gitkeep'), '');
   }
+}
+
+function configMarked() {
+  const myRenderer = new marked.Renderer();
+
+  myRenderer.link = (href, title, text) => {
+    let external = /^https?:\/\/.+$/.test(href);
+    let newWindow = external || title === 'newWindow';
+    let out = `<a href="${href}"`;
+
+    if (newWindow) {
+      out += ` target="_blank"`;
+    }
+
+    if (title && title !== 'newWindow') {
+      out += ` title="${title}"`;
+    }
+
+    return (out += `>${text}</a>`);
+  };
+
+  marked.setOptions({ renderer: myRenderer });
+}
+
+function generateIndexes() {
+  return new Promise((resolve, reject) => {
+    console.log('Generating indexes...'.blue);
+    npmRun.exec('./node_modules/.bin/doctoc --title "# Índice" posts', () => {
+      console.log('Indexes generated', 'succesfully'.green + '\n');
+      resolve();
+    });
+  });
 }
 
 function convertPost(postPath) {
@@ -68,37 +98,4 @@ async function savePost(file, content) {
 
 async function parseToHtml(content) {
   return marked.parse(content);
-}
-
-function generateIndexes() {
-  return new Promise((resolve, reject) => {
-    console.log('Generating indexes...'.blue);
-    npmRun.exec('./node_modules/.bin/doctoc --title "# Índice" posts', () => {
-      console.log('Indexes generated', 'succesfully'.green);
-      console.log('');
-      resolve();
-    });
-  });
-}
-
-function configMarked() {
-  const myRenderer = new marked.Renderer();
-
-  myRenderer.link = (href, title, text) => {
-    let external = /^https?:\/\/.+$/.test(href);
-    let newWindow = external || title === 'newWindow';
-    let out = `<a href="${href}"`;
-
-    if (newWindow) {
-      out += ` target="_blank"`;
-    }
-
-    if (title && title !== 'newWindow') {
-      out += ` title="${title}"`;
-    }
-
-    return (out += `>${text}</a>`);
-  };
-
-  marked.setOptions({ renderer: myRenderer });
 }
