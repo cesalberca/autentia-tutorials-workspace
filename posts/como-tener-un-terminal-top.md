@@ -24,11 +24,13 @@ Tenemos un fuzzy finder para encontrar todo lo que queramos:
 * Homebrew 1.3.6
 * VSCode 1.17.2
 
-# Instalación de ZSH
+## Instalación de ZSH
 
 Todo es mucho más fácil con [Homebrew](https://brew.sh/). Si estás en Windows te recomiendo [Choco](https://chocolatey.org/) y si estás en Linux tenemos [Linuxbrew](linuxbrew.sh).
 
-Ahora bien, para comenzar instalaremos [zsh](http://www.zsh.org/) con Homebrew:
+El resto del tutorial usaremos Homebrew, los pasos serán muy parecidos con Linuxbrew.
+
+Ahora bien, para comenzar instalaremos [zsh](http://www.zsh.org/) con Homebrew. Así que abrimos terminal e introducimos el siguiente comando:
 
 ```bash
 brew install zsh
@@ -58,6 +60,15 @@ Ahora reiniciamos el terminal y veremos que nos ha configurado ya zsh:
 
 ![]()
 
-# Cambiar el tema
+## Cambiar el tema
 
 Vamos a ir más allá y vamos a instalar un tema como el que mostraba al principio:
+
+## Conclusiones
+
+Antes:
+
+![Terminal por defecto](./../imgs/terminal/terminal-por-defecto.png)
+
+Después:
+
