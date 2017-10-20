@@ -72,3 +72,4 @@ Antes:
 
 Después:
 
+![Terminal después](./../imgs/terminal/terminal-despues.png)
