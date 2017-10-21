@@ -38,8 +38,8 @@ function configMarked() {
   const myRenderer = new marked.Renderer();
 
   myRenderer.link = (href, title, text) => {
-    let external = /^https?:\/\/.+$/.test(href);
-    let newWindow = external || title === 'newWindow';
+    const external = /^https?:\/\/.+$/.test(href);
+    const newWindow = external || title === 'newWindow';
     let out = `<a href="${href}"`;
 
     if (newWindow) {
@@ -51,6 +51,10 @@ function configMarked() {
     }
 
     return (out += `>${text}</a>`);
+  };
+
+  myRenderer.code = (code, language) => {
+    return `<pre><code class="lang-${language}">${code.trim()}</code></pre>`;
   };
 
   marked.setOptions({ renderer: myRenderer });
