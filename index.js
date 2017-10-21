@@ -13,12 +13,6 @@ async function init() {
   await createOutputDirIfNeeded();
   configMarked();
 
-  try {
-    await generateIndexes();
-  } catch (error) {
-    console.log(`Couldn't generate indexes. Error: ${error}`.red);
-  }
-
   const postsWithGitkeep = await fs.readdir(input);
   const relativePathPosts = postsWithGitkeep.filter(
     post => post !== '.gitkeep'
@@ -60,16 +54,6 @@ function configMarked() {
   };
 
   marked.setOptions({ renderer: myRenderer });
-}
-
-function generateIndexes() {
-  return new Promise((resolve, reject) => {
-    console.log('Generating indexes...'.blue);
-    npmRun.exec('./node_modules/.bin/doctoc --title "# Índice" posts', () => {
-      console.log('Indexes generated', 'succesfully'.green + '\n');
-      resolve();
-    });
-  });
 }
 
 function convertPost(postPath) {
