@@ -1,4 +1,3 @@
-const npmRun = require('npm-run');
 const marked = require('marked');
 const fs = require('mz/fs');
 const colors = require('colors');
@@ -6,6 +5,7 @@ const path = require('path');
 
 const input = 'posts';
 const output = 'dist';
+const imagesUploadPath = 'https://www.adictosaltrabajo.com/wp-content/uploads/';
 
 init();
 
@@ -57,7 +57,26 @@ function configMarked() {
     return `<pre><code class="lang-${language}">${code.trim()}</code></pre>`;
   };
 
+  myRenderer.image = (href, title, text) => {
+    let out = `<img `;
+
+    if (title) {
+      out += ` title="${title}" `;
+    }
+
+    const src = getImagesUploadPath(href);
+    out += `src="${src}" alt="${text}">`;
+    return out;
+  };
+
   marked.setOptions({ renderer: myRenderer });
+}
+
+function getImagesUploadPath(src) {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth() + 1;
+  return imagesUploadPath + year + '/' + month + '/' + path.basename(src);
 }
 
 function convertPost(postPath) {
