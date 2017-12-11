@@ -1,36 +1,38 @@
-# Cómo tener una terminal 🔝
+¿Usas mucho el terminal? ¿Te gustaría tener autocompletado para un sin fin de comandos, un buscador de ficheros potente, facilidades de navegar por directorios, documentación en terminal con ejemplos y además de iconitos? ¡Porque no nos olvidemos de los iconitos! Si es así, este es tu tutorial.
+<!--more-->
 
-Una imagen vale más que mil palabras, con lo cual, unos cuantos GIF valdrán muchas más:
+Una imagen vale más que mil palabras, con lo cual, unos cuantos videos valdrán muchas más:
 
-![Autocompletado de directorios](./../imgs/terminal/zsh.gif)
+<video alt="zsh" src="./../imgs/terminal/zsh.webm" autoplay loop controls style="width: 100%"></video>
 
 Autocompletado de git:
 
-![Autocompletado de git](./../imgs/terminal/git.gif)
+<video alt="Autocompletado de git" src="./../imgs/terminal/git.webm" autoplay loop controls style="width: 100%"></video>
 
 Podremos navegar fácilmente por los últimos directorios usados con [Z](https://github.com/rupa/z):
 
-![Z](./../imgs/terminal/z.gif)
+<video alt="z" src="./../imgs/terminal/z.webm" autoplay loop controls style="width: 100%"></video>
 
 Tendremos un fuzzy finder para encontrar todo lo que queramos con [fzf](https://github.com/junegunn/fzf):
 
-![FZF](./../imgs/terminal/fzf.gif)
+<video alt="fzf" src="./../imgs/terminal/fzf.webm" autoplay loop controls style="width: 100%"></video>
 
 El buscar documentación será mucho más fácil con [tldr](https://tldr.sh/):
 
-![tldr](./../imgs/terminal/tldr.gif)
+<video alt="tldr" src="./../imgs/terminal/tldr.webm" autoplay loop controls style="width: 100%"></video>
 
 ¿Tú también quieres todo esto? Sigue este tutorial para tener el mejor terminal de todos.
 
 ## Requisitos
 
-* Homebrew 1.3.6
+* [Homebrew 1.3.6](https://brew.sh/)
+* Sistema Unix
 
 ## Instalación de ZSH
 
-Todo es mucho más fácil con [Homebrew](https://brew.sh/) y si estás en Linux también disponemos de un gestor de paquetes parecido a Homebrew: [Linuxbrew](linuxbrew.sh). Si estás en Windows, estás de mala suerte, ya que no se puede. Prueba a mirar con el [subsistema de de Bash para windows](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide), quizás se pueda hacer ahí.
+Todo es mucho más fácil con [Homebrew](https://brew.sh/) y si estás en Linux también disponemos de un gestor de paquetes parecido a Homebrew: [Linuxbrew](linuxbrew.sh). Si estás en Windows, lo que estás es de mala suerte, ya que no se puede  a priori. Prueba a mirar con el [subsistema de de Bash para windows](https://msdn.microsoft.com/en-us/commandline/wsl/install_guide), quizás ahí se pueda hacer. Este tutorial te explica [cómo instalar zsh en Windows](https://www.howtogeek.com/258518/how-to-use-zsh-or-another-shell-in-windows-10/).
 
-El resto del tutorial usaremos Homebrew, los pasos serán muy parecidos con otros gestores, de tener problemas tendremos que mirar en la documentación de cada utilidad que se mencione.
+El resto del tutorial usaremos Homebrew, los pasos serán muy parecidos con otros gestores, de tener problemas tendremos que mirar en la documentación la sección de instalación de cada utilidad que se mencione.
 
 Ahora bien, para comenzar instalaremos [zsh](http://www.zsh.org/) con Homebrew. Así que abrimos terminal e introducimos el siguiente comando:
 
@@ -64,6 +66,8 @@ Ahora reiniciamos el terminal y veremos que nos ha configurado ya zsh:
 
 Prueba a hacer `cd` desde una carpeta cualquier y dale a tabulador, podrás navegar usando o bien tabulador o las flechas del teclado.
 
+_Nota: Si quieres volver al terminal de bash por defecto usa el siguiente comando: `chsh -s /bin/bash`._
+
 ## Cambiar el tema
 
 Vamos a ir más allá y vamos a instalar un tema como el que mostraba al principio:
@@ -72,7 +76,7 @@ Vamos a ir más allá y vamos a instalar un tema como el que mostraba al princip
 git clone https://github.com/bhilburn/powerlevel9k.git ~/.oh-my-zsh/custom/themes/powerlevel9k
 ```
 
-![](./../imgs/terminal/ohmyzsh-theme.png)
+![Clonar tema de Powerlevel9k ](./../imgs/terminal/ohmyzsh-theme.png)
 
 Una vez hecho esto, hay que editar nuestro fichero `.zshrc`, que sería lo equivalente al `.bashrc`. Usaremos `nano` para ello:
 
@@ -88,11 +92,11 @@ Modificar el tema por defecto por el siguiente:
 ZSH_THEME="powerlevel9k/powerlevel9k"
 ```
 
-![](./../imgs/terminal/zshrc-nano.png)
+![Cambiar ZSH_THEME con nano](./../imgs/terminal/zshrc-nano.png)
 
 Reiniciamos el terminal y redoble de tambores...
 
-![](./../imgs/terminal/nuevo-tema.png)
+![Terminal reiniciado con el nuevo tema aplicado](./../imgs/terminal/nuevo-tema.png)
 
 Uff, qué feo. ¿Por qué? Pues porque este tema usa de caracteres especiales con tal de mostrarlos como iconos, con lo que tendremos que descargar una fuente de tipo [powerline](https://github.com/powerline/fonts).
 
@@ -112,6 +116,8 @@ Y una vez hecho el tap podemos instalar la fuente que queramos de [este reposito
 brew cask install font-meslo-for-powerline
 ```
 
+_Nota: prueba a escribir `brew cask install font-meslo` y dale a tabulador,  fíjate que te autocompleta. Esto es debeido a que oh my zsh incluye un plugin de Brew, pero hay [mucho más](https://github.com/robbyrussell/oh-my-zsh/wiki/Plugins)._
+
 ![Brew cask install](./../imgs/terminal/cask-install-font.png)
 
 ## Actualizar fuente en Terminal
@@ -120,7 +126,7 @@ Por último, modificamos la fuente del terminal para coger la fuente que acabamo
 
 Dentro de las preferencias ir a perfiles:
 
-![](./../imgs/terminal/terminal-actualizar-texto.png)
+![Pantalla de profiles dentro de las preferencias del terminal](./../imgs/terminal/terminal-actualizar-texto.png)
 
 Dentro de texto, le damos a cambiar fuente y elegimos una de las fuentes de Meslo. Hay varios pesos, elegir el que más os guste, a mi me agrada el peso M con un tamaño de 13 puntos:
 
