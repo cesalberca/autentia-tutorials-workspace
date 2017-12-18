@@ -1,3 +1,4 @@
+const npmRun = require('npm-run');
 const marked = require('marked');
 const fs = require('mz/fs');
 const colors = require('colors');
@@ -12,6 +13,7 @@ init();
 async function init() {
   await createOutputDirIfNeeded();
   configMarked();
+  await generateIndexes();
 
   const postsWithGitkeep = await fs.readdir(input);
   const relativePathPosts = postsWithGitkeep.filter(
@@ -105,4 +107,14 @@ async function savePost(file, content) {
 
 async function parseToHtml(content) {
   return marked.parse(content);
+}
+
+function generateIndexes() {
+  return new Promise((resolve, reject) => {
+    console.log('Generating indexes...'.blue);
+    npmRun.exec('./node_modules/.bin/doctoc --title "# Índice" posts', () => {
+      console.log('Indexes generated', 'succesfully'.green + '\n');
+      resolve();
+    });
+  });
 }
