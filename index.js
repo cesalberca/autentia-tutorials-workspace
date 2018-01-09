@@ -3,6 +3,9 @@ const marked = require('marked');
 const fs = require('mz/fs');
 const colors = require('colors');
 const path = require('path');
+const imagemin = require('imagemin');
+const imageminJpegtran = require('imagemin-jpegtran');
+const imageminPngquant = require('imagemin-pngquant');
 
 const input = 'posts';
 const output = 'dist';
@@ -14,6 +17,7 @@ async function init() {
   await createOutputDirIfNeeded();
   configMarked();
   await generateIndexes();
+  await minimizeImages();
 
   const postsWithGitkeep = await fs.readdir(input);
   const relativePathPosts = postsWithGitkeep.filter(
@@ -78,7 +82,10 @@ function getImagesUploadPath(src) {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
-  return imagesUploadPath + year + '/' + month + '/' + path.basename(src);
+  const formattedMonth = month >= 10 ? month : `0${month}`;
+  return (
+    imagesUploadPath + year + '/' + formattedMonth + '/' + path.basename(src)
+  );
 }
 
 function convertPost(postPath) {
@@ -116,5 +123,17 @@ function generateIndexes() {
       console.log('Indexes generated', 'succesfully'.green + '\n');
       resolve();
     });
+  });
+}
+
+function minimizeImages() {
+  console.log('Minimizing images...'.blue);
+  return imagemin(['./imgs/**/*.{jpg,png}'], './dist/imgs', {
+    plugins: [imageminJpegtran(), imageminPngquant({ quality: '65-80' })]
+  }).then(images => {
+    console.log(
+      `Minimized ${images.length} images` + ' succesfully'.green + '\n'
+    );
+    return;
   });
 }
