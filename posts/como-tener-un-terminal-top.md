@@ -1,3 +1,17 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Índice
+
+- [Requisitos](#requisitos)
+- [Instalación de ZSH](#instalaci%C3%B3n-de-zsh)
+- [Cambiar el tema](#cambiar-el-tema)
+- [Instalación de fuentes](#instalaci%C3%B3n-de-fuentes)
+- [Actualizar fuente en Terminal](#actualizar-fuente-en-terminal)
+- [Instalar utilidades](#instalar-utilidades)
+- [Conclusiones](#conclusiones)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 ¿Usas mucho el terminal? ¿Te gustaría tener autocompletado para un sin fin de comandos, un buscador de ficheros potente, facilidades de navegar por directorios, documentación en terminal con ejemplos y además de iconitos? ¡Porque no nos olvidemos de los iconitos! Si es así, este es tu tutorial.
 <!--more-->
 
