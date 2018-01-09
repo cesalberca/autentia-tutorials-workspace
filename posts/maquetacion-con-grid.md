@@ -7,10 +7,12 @@ La maquetación con CSS siempre ha sido... _inesperada_. Llena de tablas con inf
 ## Índice
 
 - [CSS Grid](#css-grid)
+- [Colocar elementos en la grilla](#colocar-elementos-en-la-grilla)
 - [Layouts con grid-template-areas](#layouts-con-grid-template-areas)
-- [repeat().](#repeat)
+- [repeat()](#repeat)
 - [Responsividad avanzada](#responsividad-avanzada)
 - [CSS Grid avanzado](#css-grid-avanzado)
+- [Conclusión](#conclusi%C3%B3n)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -25,7 +27,7 @@ Veamos ejemplos. ¿Cómo haríamos el siguiente layout?
 Pues con CSS Grid sería tan fácil como a partir del siguiente HTML:
 
 ```html
-<main>
+&lt;main&gt;
   <div>1</div>
   <div>2</div>
   <div>3</div>
@@ -33,7 +35,7 @@ Pues con CSS Grid sería tan fácil como a partir del siguiente HTML:
   <div>5</div>
   <div>6</div>
   <div>7</div>
-</main>
+&lt;/main&gt;
 ```
 
 Haríamos lo siguiente:
@@ -59,8 +61,8 @@ Con `grid-template-rows` más de lo mismo, solo que esta vez estamos definiendo 
 
 Aquí tenéis el resultado:
 
-<p data-height="265" data-theme-id="light" data-slug-hash="YYwVRQ" data-default-tab="result" data-user="cesalberca" data-embed-version="2" data-pen-title="CSS Grid - 1A" class="codepen">See the Pen <a href="https://codepen.io/cesalberca/pen/YYwVRQ/">CSS Grid - 1A</a> by César (<a href="https://codepen.io/cesalberca">@cesalberca</a>) on <a href="https://codepen.io">CodePen</a>.</p>
-<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<iframe height='300' scrolling='no' title='CSS Grid - Galería' src='//codepen.io/cesalberca/embed/YYwVRQ/?height=300&theme-id=20649&default-tab=css,result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/cesalberca/pen/YYwVRQ/'>CSS Grid - Galería</a> by César (<a href='https://codepen.io/cesalberca'>@cesalberca</a>) on <a href='https://codepen.io'>CodePen</a>.
+</iframe>
 
 Como vemos el HTML queda absolutamente pristino, no hay necesidad de añadir clases utilitarias para filas y columnas. En un ejemplo posterior veremos de qué manera podremos hacer que el número de celdas sea dinámico.
 
@@ -81,7 +83,7 @@ Y pasa lo mismo con las filas.
 Así que una vez explicado este contexto vamos con el código:
 
 ```html
-<main>
+&lt;main&gt;
   <div class="item-a">
     <img src="https://picsum.photos/300/600/?random">
   </div>
@@ -106,7 +108,7 @@ Así que una vez explicado este contexto vamos con el código:
   <div class="item-d">
     <img src="https://picsum.photos/200/600/?random">
   </div>
-</main>
+&lt;/main&gt;
 ```
 
 Pasamos a incluir el CSS:
@@ -148,8 +150,8 @@ img {
 
 Este es el resultado:
 
-<p data-height="300" data-theme-id="20649" data-slug-hash="aEdGwj" data-default-tab="result" data-user="cesalberca" data-embed-version="2" data-pen-title="CSS Grid - Masonry" class="codepen">See the Pen <a href="https://codepen.io/cesalberca/pen/aEdGwj/">CSS Grid - Masonry</a> by César (<a href="https://codepen.io/cesalberca">@cesalberca</a>) on <a href="https://codepen.io">CodePen</a>.</p>
-<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<iframe height='300' scrolling='no' title='CSS Grid - Masonry' src='//codepen.io/cesalberca/embed/aEdGwj/?height=300&theme-id=20649&default-tab=result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/cesalberca/pen/aEdGwj/'>CSS Grid - Masonry</a> by César (<a href='https://codepen.io/cesalberca'>@cesalberca</a>) on <a href='https://codepen.io'>CodePen</a>.
+</iframe>
 
 ## Layouts con grid-template-areas
 
@@ -164,13 +166,13 @@ Esto facilita bastante las cosas, si no me crees puedes leer más [aquí](https:
 Primero definimos el HTML:
 
 ```html
-<main>
+&lt;main&gt;
   <header>Header</header>
   <nav>Nav</nav>
   <section>Section</section>
   <aside>Aside</aside>
   <footer>Footer</footer>
-</main>
+&lt;/main&gt;
 ```
 
 Y comenzamos especificando el contenedor, en este caso será `main`:
@@ -392,12 +394,12 @@ Y por último nos queda el media query para desktop:
 
 Aquí teneís el código completo:
 
-<p data-height="318" data-theme-id="light" data-slug-hash="xpGvvb" data-default-tab="result" data-user="cesalberca" data-embed-version="2" data-pen-title="CSS Grid - Holy grail" class="codepen">See the Pen <a href="https://codepen.io/cesalberca/pen/xpGvvb/">CSS Grid - Holy grail</a> by César (<a href="https://codepen.io/cesalberca">@cesalberca</a>) on <a href="https://codepen.io">CodePen</a>.</p>
-<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<iframe height='300' scrolling='no' title='CSS Grid - Holy grail' src='//codepen.io/cesalberca/embed/xpGvvb/?height=300&theme-id=20649&default-tab=css,result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/cesalberca/pen/xpGvvb/'>CSS Grid - Holy grail</a> by César (<a href='https://codepen.io/cesalberca'>@cesalberca</a>) on <a href='https://codepen.io'>CodePen</a>.
+</iframe>
 
 _Nota: Prueba a sustituir dentro de `grid-template-areas` un area por `.`._
 
-## repeat().
+## repeat()
 
 Entonces, con grid-template-columns si quiero crear una grilla de 12 columnas tendría que hacerlo tal que así:
 
@@ -475,8 +477,8 @@ De esta forma tenemos la interacción que se ha mostrado anteriormente.
 
 Aquí tenéis el código:
 
-<p data-height="265" data-theme-id="light" data-slug-hash="YYXmWz" data-default-tab="result" data-user="cesalberca" data-embed-version="2" data-pen-title="CSS Grid - Galería reponsiva avanzada" class="codepen">See the Pen <a href="https://codepen.io/cesalberca/pen/YYXmWz/">CSS Grid - Galería reponsiva avanzada</a> by César (<a href="https://codepen.io/cesalberca">@cesalberca</a>) on <a href="https://codepen.io">CodePen</a>.</p>
-<script async src="https://production-assets.codepen.io/assets/embed/ei.js"></script>
+<iframe height='300' scrolling='no' title='CSS Grid - Galería reponsiva avanzada' src='//codepen.io/cesalberca/embed/YYXmWz/?height=300&theme-id=20649&default-tab=css,result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/cesalberca/pen/YYXmWz/'>CSS Grid - Galería reponsiva avanzada</a> by César (<a href='https://codepen.io/cesalberca'>@cesalberca</a>) on <a href='https://codepen.io'>CodePen</a>.
+</iframe>
 
 ## CSS Grid avanzado
 
