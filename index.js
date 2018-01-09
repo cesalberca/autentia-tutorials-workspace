@@ -112,7 +112,7 @@ async function parseToHtml(content) {
 function generateIndexes() {
   return new Promise((resolve, reject) => {
     console.log('Generating indexes...'.blue);
-    npmRun.exec('./node_modules/.bin/doctoc --title "# Índice" posts', () => {
+    npmRun.exec('./node_modules/.bin/doctoc --title "## Índice" posts', () => {
       console.log('Indexes generated', 'succesfully'.green + '\n');
       resolve();
     });
