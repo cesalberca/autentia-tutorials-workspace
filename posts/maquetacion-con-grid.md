@@ -9,9 +9,8 @@ La maquetación con CSS siempre ha sido... _inesperada_. Llena de tablas con inf
 - [CSS Grid](#css-grid)
 - [Colocar elementos en la grilla](#colocar-elementos-en-la-grilla)
 - [Layouts con grid-template-areas](#layouts-con-grid-template-areas)
-- [repeat()](#repeat)
+- [Repeat](#repeat)
 - [Responsividad avanzada](#responsividad-avanzada)
-- [CSS Grid avanzado](#css-grid-avanzado)
 - [Conclusión](#conclusi%C3%B3n)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -53,16 +52,13 @@ _Nota: Se han obviado algunos estilos meramente visuales._
 
 Como vemos en el CSS de la clase `container` decimos a este elemento que su modo `display` es `grid`. Lo que quiere decir que los __hijos inmediatamente descendientes__ serán parte de la grilla.
 
-El siguiente punto importante es `grid-gap: 10px`. Este línea lo que hace es incluir un "gutter" o canal de rejilla de 10px para separar los elementos de la grilla.
+El siguiente punto importante es `grid-gap: 1rem`. Este línea lo que hace es incluir un "gutter" o canal de rejilla de 1rem para separar los elementos de la grilla.
 
 Con `grid-template-columns` lo que hacemos es definir el número de columnas y el ancho de las mismas. En este caso se han definido 3 columnas de 300px cada una.
 
 Con `grid-template-rows` más de lo mismo, solo que esta vez estamos definiendo el número de filas. En nuestro ejemplo hemos definido 2 filas de 150px cada una. Además, el algoritmo que usa grid es lo suficiente inteligente como para colocar de forma esperada elementos extra, como es nuestro caso, ya que hemos definido 2 filas pero hemos incluido un séptimo elemento que se coloca en una tercera fila no definida.
 
-Aquí tenéis el resultado:
-
-<iframe height='300' scrolling='no' title='CSS Grid - Galería' src='//codepen.io/cesalberca/embed/YYwVRQ/?height=300&theme-id=20649&default-tab=css,result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/cesalberca/pen/YYwVRQ/'>CSS Grid - Galería</a> by César (<a href='https://codepen.io/cesalberca'>@cesalberca</a>) on <a href='https://codepen.io'>CodePen</a>.
-</iframe>
+Aquí tenéis el resultado: [CSS Grid - Galería](https://codepen.io/cesalberca/pen/YYwVRQ/)
 
 Como vemos el HTML queda absolutamente pristino, no hay necesidad de añadir clases utilitarias para filas y columnas. En un ejemplo posterior veremos de qué manera podremos hacer que el número de celdas sea dinámico.
 
@@ -72,7 +68,7 @@ Hemos visto que los elementos se colocan solos. Pero, ¿qué pasa si queremos co
 
 ![CSS Grid - Masonry](../imgs/maquetacion-con-grid/css-grid-masonry.png)
 
-Por esta razón podemos hacer uso de `grid-column-start` y `grid-column-end` para colocar en las columnas o `grid-row-start` y `grid-row-end` para las filas. O también podemos hacer uso del método acortado `grid-column: X / Y;` y `grid-row: X / Y;` siendo X e Y el número de columna y fila respectivamente.
+Por esta razón podemos hacer uso de `grid-column-start` y `grid-column-end` para colocar elementos en un línea de columna o `grid-row-start` y `grid-row-end` para las filas. O también podemos hacer uso del método acortado `grid-column: X / Y;` y `grid-row: X / Y;` siendo X e Y el número de columna o fila inicial y el final.
 
 Cuando definimos una grilla de 3 columnas por debajo se generan 4 líneas como se puede observar en el siguiente gráfico:
 
@@ -80,7 +76,7 @@ Cuando definimos una grilla de 3 columnas por debajo se generan 4 líneas como s
 
 Y pasa lo mismo con las filas.
 
-Así que una vez explicado este contexto vamos con el código:
+Así que una vez explicado este concepto vamos con el código:
 
 ```html
 &lt;main&gt;
@@ -148,16 +144,13 @@ img {
 }
 ```
 
-Este es el resultado:
-
-<iframe height='300' scrolling='no' title='CSS Grid - Masonry' src='//codepen.io/cesalberca/embed/aEdGwj/?height=300&theme-id=20649&default-tab=result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/cesalberca/pen/aEdGwj/'>CSS Grid - Masonry</a> by César (<a href='https://codepen.io/cesalberca'>@cesalberca</a>) on <a href='https://codepen.io'>CodePen</a>.
-</iframe>
+Este es el resultado: [CSS Grid - Masonry](https://codepen.io/cesalberca/pen/aEdGwj/)
 
 ## Layouts con grid-template-areas
 
 CSS Grid no solamente permite hacer de nuestra maquetación más flexible, si no que además es un motor muy potente para diseñar layouts en __dos dimensiones__. Por ejemplo veamos uno de los layouts más usados a lo largo de la web. El denominado _holy grail_:
 
-![CSS Grid - Holy Grail](../imgs/maquetacion-con-grid/css-grid-holy-grail.webm)
+<video width="100%" alt="CSS Grid - Holy Grail" src="../imgs/maquetacion-con-grid/css-grid-holy-grail.webm" muted autoplay controls loop></video>
 
 En este ejemplo haremos un diseño _mobile-first_, es decir comenzaremos maquetando para móvil e iremos avanzando por los puntos de ruptura pasando por tablet y posteriormente a desktop.
 
@@ -187,7 +180,7 @@ main {
 }
 ```
 
-Los estilos aplicados lo único que hacen es aplicar un máximo de ancho de 1000px. Es recomendable hacer uso del max-width dado que en monitores especialmente grandes no queremos que el ancho de la web sea el total del mismo.
+Con los estilos que acabamos de aplicar especificamos un máximo de ancho de 1000px. Es recomendable hacer uso del max-width dado que en monitores especialmente grandes no queremos que el ancho de la web sea el total del mismo.
 
 También especificamos un mínimo de altura con vh ([Viewport Height](https://css-tricks.com/fun-viewport-units/)). Esto hará que aunque no tengamos mucho contenido en nuestra sección de contenido nos aseguramos que el footer queda abajo del todo. Si lo quitásemos quedaría tal que así:
 
@@ -245,6 +238,8 @@ footer {
 ```
 
 Y si nos fijamos atentamente veremos un nueva unidad: `fr`. Esta unidad de medida es propia de CSS Grid e indica que un elemento debería ocupar una fracción determinada del espacio restante.
+
+Lo bueno de `fr` es que tiene en cuenta el tamaño de los elementos de la grilla por lo que si tenemos dos columnas y la primera hemos dicho que ocupe `100px` y la segunda `1fr` la segunda columna ocupará  `100% - 100px`.
 
 El resultado tendría que ser el siguiente:
 
@@ -306,6 +301,8 @@ grid-template-areas:
   "aside section section"
   "footer footer footer"
 ```
+
+Dentro del media query hemos redefinido el número de columnas y filas. Por último reordenamos los elementos especificando una nueva distribución con `grid-template-areas`.
 
 El CSS hasta este punto sería el siguiente:
 
@@ -392,14 +389,11 @@ Y por último nos queda el media query para desktop:
 }
 ```
 
-Aquí teneís el código completo:
-
-<iframe height='300' scrolling='no' title='CSS Grid - Holy grail' src='//codepen.io/cesalberca/embed/xpGvvb/?height=300&theme-id=20649&default-tab=css,result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/cesalberca/pen/xpGvvb/'>CSS Grid - Holy grail</a> by César (<a href='https://codepen.io/cesalberca'>@cesalberca</a>) on <a href='https://codepen.io'>CodePen</a>.
-</iframe>
+Aquí teneís el código completo: [CSS Grid - Holy grail](https://codepen.io/cesalberca/pen/xpGvvb/)
 
 _Nota: Prueba a sustituir dentro de `grid-template-areas` un area por `.`._
 
-## repeat()
+## Repeat
 
 Entonces, con grid-template-columns si quiero crear una grilla de 12 columnas tendría que hacerlo tal que así:
 
@@ -413,7 +407,7 @@ Pues no, dado que tenemos la función `repeat()`, cuyo primer argumento es el n�
 grid-template-columns: repeat(12, 1fr);
 ```
 
-Aunque aquellos que vengáis de [Bootstrap](https://getbootstrap.com/) deciros que no tenemos que trabajar por un sistema de columnas y filas de una forma tan rígida. No, la belleza de CSS Grid es que podremos crear las columnas y filas a nuestro antojo y bajo demanda.
+Aunque aquellos que vengáis de [Bootstrap](https://getbootstrap.com/) deciros que no tenemos que trabajar por un sistema de columnas y filas de una forma tan _rígida_. No, la belleza de CSS Grid es que podremos crear las columnas y filas a nuestro antojo y bajo demanda.
 
 De hecho, en el ejemplo anterior si tuviésemos el siguiente CSS:
 
@@ -455,7 +449,7 @@ __No tendría absolutamente ninguna diferencia visual__. En [este artículo](htt
 
 ¿Cómo haríamos la siguiente interacción?
 
-![Interacción CSS Grid - 1](../imgs/maquetacion-con-grid/css-grid-1.webm)
+<video width="100%" alt="Interacción CSS Grid - 1" src="../imgs/maquetacion-con-grid/css-grid-1.webm" muted autoplay controls loop></video>
 
 Esto lo podremos hacer con `auto-fit`. Queremos que las celdas ocupen 200px y que se coloquen en una fila siempre y cuando haya espacio.
 
@@ -475,12 +469,9 @@ grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 
 De esta forma tenemos la interacción que se ha mostrado anteriormente.
 
-Aquí tenéis el código:
+Aquí tenéis el código: [CSS Grid - Galería reponsiva avanzada](https://codepen.io/cesalberca/pen/YYXmWz)
 
-<iframe height='300' scrolling='no' title='CSS Grid - Galería reponsiva avanzada' src='//codepen.io/cesalberca/embed/YYXmWz/?height=300&theme-id=20649&default-tab=css,result&embed-version=2' frameborder='no' allowtransparency='true' allowfullscreen='true' style='width: 100%;'>See the Pen <a href='https://codepen.io/cesalberca/pen/YYXmWz/'>CSS Grid - Galería reponsiva avanzada</a> by César (<a href='https://codepen.io/cesalberca'>@cesalberca</a>) on <a href='https://codepen.io'>CodePen</a>.
-</iframe>
-
-## CSS Grid avanzado
+## Conclusión
 
 Como hemos visto con `grid-template-areas`, `grid-template-rows` y `grid-template-columns` podemos lograr maquetación en CSS de manera fácil y efectiva. Pero solamente hemos visto la punta del iceberg, puesto que CSS Grid trae consigo un montón más de funcionalidades y mejoras.
 
@@ -488,6 +479,4 @@ Por ejemplo podemos tener control absoluto del alineamiento que toman todos los 
 
 Aquí tenéis una [guía completa de CSS Grid](https://css-tricks.com/snippets/css/complete-guide-grid/).
 
-## Conclusión
-
-Veremos cada vez más y más que grid será la solución definitiva para la maquetación web. Ofrece todo aquello que necesitamos, siendo fácil de comenzar con ello, totalmente flexible y muy completo.
+Veremos cada vez más y más que grid será la solución definitiva para la maquetación web. Ofrece todo aquello que necesitamos, siendo fácil de comenzar con ello, totalmente flexible y extremadamente completo.
