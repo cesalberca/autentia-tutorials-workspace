@@ -48,15 +48,15 @@ main {
 }
 ```
 
-_Nota: Se han obviado algunos estilos meramente visuales._
+_Nota: se han obviado algunos estilos meramente visuales._
 
 Como vemos en el CSS de la clase `container` decimos a este elemento que su modo `display` es `grid`. Lo que quiere decir que los __hijos inmediatamente descendientes__ serán parte de la grilla.
 
-El siguiente punto importante es `grid-gap: 1rem`. Este línea lo que hace es incluir un "gutter" o canal de rejilla de 1rem para separar los elementos de la grilla.
+El siguiente punto importante es `grid-gap: 1rem`. Este línea lo que hace es incluir un "gutter" o canal de rejilla de `1rem` para separar los elementos de la grilla. [La unidad rem](https://developer.mozilla.org/en-US/docs/Learn/CSS/Introduction_to_CSS/Values_and_units) es un tamaño que se basa en el __tamaño base__ de la letra _m_. Se usa comunmente para maquetar de una forma más flexible, dado que con modificar el tamaño de la fuente base todo el contenido se adaptaría en concordancia con en el tamaño base.
 
-Con `grid-template-columns` lo que hacemos es definir el número de columnas y el ancho de las mismas. En este caso se han definido 3 columnas de 300px cada una.
+Con `grid-template-columns` lo que hacemos es definir el número de columnas y el ancho de las mismas. En este caso se han definido 3 columnas de 200px cada una.
 
-Con `grid-template-rows` más de lo mismo, solo que esta vez estamos definiendo el número de filas. En nuestro ejemplo hemos definido 2 filas de 150px cada una. Además, el algoritmo que usa grid es lo suficiente inteligente como para colocar de forma esperada elementos extra, como es nuestro caso, ya que hemos definido 2 filas pero hemos incluido un séptimo elemento que se coloca en una tercera fila no definida.
+Con `grid-template-rows` más de lo mismo, solo que esta vez estamos definiendo el número de filas. En nuestro ejemplo hemos definido 2 filas de 150px cada una. Además, el algoritmo que usa grid es lo suficiente inteligente como para colocar de forma esperada elementos extra, como es nuestro caso, ya que hemos definido 2 filas pero hemos incluido un séptimo elemento que se coloca en una tercera fila no definida. Y su altura (al no estar especificada) sería la que ocupase el contenido de la celda.
 
 Aquí tenéis el resultado: [CSS Grid - Galería](https://codepen.io/cesalberca/pen/YYwVRQ/)
 
@@ -148,7 +148,7 @@ Este es el resultado: [CSS Grid - Masonry](https://codepen.io/cesalberca/pen/aEd
 
 ## Layouts con grid-template-areas
 
-CSS Grid no solamente permite hacer de nuestra maquetación más flexible, si no que además es un motor muy potente para diseñar layouts en __dos dimensiones__. Por ejemplo veamos uno de los layouts más usados a lo largo de la web. El denominado _holy grail_:
+CSS Grid no solamente permite hacer de nuestra maquetación más flexible, sino que además es un motor muy potente para diseñar layouts en __dos dimensiones__. Por ejemplo veamos uno de los layouts más usados a lo largo de la web. El denominado _holy grail_:
 
 <video width="100%" alt="CSS Grid - Holy Grail" src="../imgs/maquetacion-con-grid/css-grid-holy-grail.webm" muted autoplay controls loop></video>
 
@@ -197,7 +197,7 @@ grid-template-rows: 100px
   200px;
 ```
 
-_Nota: Para que resulta más visual suelo colocar las rows de manera vertical en el código y las columnas en horizontal._
+_Nota: para que resulte más visual suelo colocar las rows de manera vertical en el código y las columnas en horizontal._
 
 También añadiremos algunos colores, para que se vea todo mejor. Con lo que nuestro CSS sería el siguiente:
 
@@ -247,31 +247,31 @@ El resultado tendría que ser el siguiente:
 
 La pregunta ahora es la siguiente: ¿Cómo reordenamos los elementos? Es aquí donde entran en juego `grid-template-areas` y `grid-area`. Es mucho mejor visto en un ejemplo:
 
-A cada _sección_ de nuestra web le asignamos un `grid-area`:
+A cada _sección_ de nuestra web le asignamos un `grid-area`. El nombre del `grid-area` puede ser el que queramos:
 
 ```css
 header {
-  grid-area: header;
+  grid-area: my-header;
   background-color: blueviolet;
 }
 
 nav {
-  grid-area: nav;
+  grid-area: my-nav;
   background-color: cornflowerblue;
 }
 
 aside {
-  grid-area: aside;
+  grid-area: my-aside;
   background-color: darkmagenta;
 }
 
 section {
-  grid-area: section;
+  grid-area: my-section;
   background-color: indigo;
 }
 
 footer {
-  grid-area: footer;
+  grid-area: my-footer;
   background-color: darkorchid;
 }
 ```
@@ -280,14 +280,14 @@ Y la magia la veremos en el contenedor (main) con `grid-template-areas`:
 
 ```css
 grid-template-areas:
-  "header header header"
-  "nav nav nav"
-  "section section section"
-  "aside aside aside"
-  "footer footer footer"
+  "my-header my-header my-header"
+  "my-nav my-nav my-nav"
+  "my-section my-section my-section"
+  "my-aside my-aside my-aside"
+  "my-footer my-footer my-footer"
 ```
 
-De forma que __en el código veremos cómo quedaría nuestro layout gráficamente__. Y contamos con la ventaja que el orden de los elementos en HTML es completamente independiente. ¿Os imagináis cómo haremos para reordenar los elementos en tableta? Pues introduciremos una [media query](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries) y simplemente añadiremos el siguiente CSS:
+De forma que __en el código veremos cómo quedaría nuestro layout gráficamente__. Y contamos con la ventaja de que el orden de los elementos en HTML es completamente independiente. ¿Os imagináis cómo haremos para reordenar los elementos en tableta? Pues introduciremos una [media query](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries) y simplemente añadiremos el siguiente CSS:
 
 ```css
 grid-template-columns: 200px 1fr 200px;
@@ -296,10 +296,10 @@ grid-template-rows: 150px
   1fr
   100px;
 grid-template-areas:
-  "header header header"
-  "nav nav nav"
-  "aside section section"
-  "footer footer footer"
+  "my-header my-header my-header"
+  "my-nav my-nav my-nav"
+  "my-aside my-section my-section"
+  "my-footer my-footer my-footer"
 ```
 
 Dentro del media query hemos redefinido el número de columnas y filas. Por último reordenamos los elementos especificando una nueva distribución con `grid-template-areas`.
@@ -320,35 +320,35 @@ main {
     100px
     200px;
   grid-template-areas:
-    "header header header"
-    "nav nav nav"
-    "section section section"
-    "aside aside aside"
-    "footer footer footer"
+    "my-header my-header my-header"
+    "my-nav my-nav my-nav"
+    "my-section my-section my-section"
+    "my-aside aside aside"
+    "my-footer my-footer my-footer"
 }
 
 header {
-  grid-area: header;
+  grid-area: my-header;
   background-color: blueviolet;
 }
 
 nav {
-  grid-area: nav;
+  grid-area: my-nav;
   background-color: cornflowerblue;
 }
 
 aside {
-  grid-area: aside;
+  grid-area: my-aside;
   background-color: darkmagenta;
 }
 
 section {
-  grid-area: section;
+  grid-area: my-section;
   background-color: indigo;
 }
 
 footer {
-  grid-area: footer;
+  grid-area: my-footer;
   background-color: darkorchid;
 }
 
@@ -360,10 +360,10 @@ footer {
       1fr
       100px;
     grid-template-areas:
-      "header header header"
-      "nav nav nav"
-      "aside section section"
-      "footer footer footer"
+      "my-header my-header my-header"
+      "my-nav my-nav my-nav"
+      "my-aside my-section my-section"
+      "my-footer my-footer my-footer"
   }
 }
 ```
@@ -382,16 +382,16 @@ Y por último nos queda el media query para desktop:
       1fr
       100px;
     grid-template-areas:
-      "header header header"
-      "nav section aside"
-      "footer footer footer"
+      "my-header my-header my-header"
+      "my-nav my-section my-aside"
+      "my-footer my-footer my-footer"
   }
 }
 ```
 
 Aquí teneís el código completo: [CSS Grid - Holy grail](https://codepen.io/cesalberca/pen/xpGvvb/)
 
-_Nota: Prueba a sustituir dentro de `grid-template-areas` un area por `.`._
+_Nota: prueba a sustituir dentro de `grid-template-areas` un área por "`.`" (sin las comillas)._
 
 ## Repeat
 
@@ -419,9 +419,9 @@ De hecho, en el ejemplo anterior si tuviésemos el siguiente CSS:
       1fr
       100px;
     grid-template-areas:
-      "header header header"
-      "nav section aside"
-      "footer footer footer"
+      "my-header my-header my-header"
+      "my-nav my-section my-aside"
+      "my-footer my-footer my-footer"
   }
 }
 ```
@@ -436,9 +436,9 @@ Y quisiésemos un sistema de 12 columnas con el siguiente código:
       1fr
       100px;
     grid-template-areas:
-      "header header header header header header header header header header header header"
-      "nav nav nav nav section section section section aside aside aside aside"
-      "footer footer footer footer footer footer footer footer footer footer footer footer"
+      "my-header my-header my-header my-header my-header my-header my-header my-header my-header my-header my-header my-header"
+      "my-nav my-nav my-nav my-nav my-section my-section my-section my-section my-aside my-aside my-aside my-aside"
+      "my-footer my-footer my-footer my-footer my-footer my-footer my-footer my-footer my-footer my-footer my-footer my-footer"
   }
 }
 ```
