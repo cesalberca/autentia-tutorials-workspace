@@ -70,7 +70,7 @@ function configMarked() {
       out += ` title="${title}" `;
     }
 
-    const src = getImagesUploadPath(href);
+    const src = getMediaUploadPath(href);
     out += `src="${src}" alt="${text}">`;
     return out;
   };
@@ -78,7 +78,7 @@ function configMarked() {
   marked.setOptions({ renderer: myRenderer });
 }
 
-function getImagesUploadPath(src) {
+function getMediaUploadPath(src) {
   const today = new Date();
   const year = today.getFullYear();
   const month = today.getMonth() + 1;
