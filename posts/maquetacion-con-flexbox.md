@@ -47,7 +47,7 @@ div {
 }
 ```
 
-Y además, vamos a añadir este selector:
+Y además, vamos a añadir este selector al principio de __todos nuestros CSS__:
 
 ```css
 * {
@@ -57,7 +57,7 @@ Y además, vamos a añadir este selector:
 
 ¿Sabes lo que hace `box-sizing: border-box;`? Verás, con la propiedad box-sizing se puede redefinir de qué manera ha de calcular la altura y la anchura de los elementos de nuestra página. Es prácticamente obligatorio definir esta propiedad si queremos que nuestra maquetación sea predecible.
 
-Lo que indica border-box es que tanto los __paddings__ y __bordes__ se apliquen en el __interior de la caja__. [Aquí tienes más información](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing).
+Lo que indica `border-box` es que tanto los __paddings__ y __bordes__ se apliquen en el __interior de la caja__. [Aquí tienes más información](https://developer.mozilla.org/en-US/docs/Web/CSS/box-sizing).
 
 Y esto produce lo siguiente:
 
@@ -67,7 +67,7 @@ Impresionante, ¿verdad? Pues no mucho si somos francos. La verdadera magia es c
 
 ## Contenedor
 
-El contenedor recibe una serie de propiedades muy interesantes que nos permiten hacer cosas como lo siguiente:
+El contenedor recibe una serie de propiedades muy interesantes. Entre ellas tenemos `justify-content` y que nos permite hacer lo siguiente:
 
 ```css
 section {
@@ -84,7 +84,9 @@ section {
 
 Esto ya pinta más interesante. Pero... ¿qué acabamos de hacer? Pues verás, cuando disponemos un elemento en modo flex lo que hacemos es colocar los elementos hijos a lo largo de __un eje principal__.
 
-El eje por defecto es el `row`. Y se puede modificar con `flex-direction`. Por ello vamos a probar a añadir un nuevo elemento al HTML:
+Y con `justify-content` podemos alinear los elementos __del eje principal__. En el caso anterior hemos puesto `flex-end` que lo alinea al final. El valor por defecto es `flex-start`. Veremos todas las demás propiedades más tarde.
+
+En cuanto a los ejes el eje por defecto es `row`. Y se puede modificar con `flex-direction`. Por ello vamos a probar a añadir un nuevo elemento al HTML:
 
 ```html
 <section>
@@ -113,8 +115,6 @@ section {
 
 Si nos fijamos bien, vemos que los elementos se han dispuesto en filas. Y no solo eso, si no que vemos que los elementos se han alineado abajo del todo.
 
-Esto es debido a que `justify-content` alinea el contenido del __eje principal__. Como ahora el eje principal es el de las Y si decimos que se justifique con `flex-end` vamos a hacer que se quede abajo del todo.
-
 Además podemos alinear en el eje secundario con `align-items`:
 
 ```css
@@ -141,11 +141,11 @@ div {
 }
 ```
 
-Lo mejor para asimilar lo que hace cada uno es irlo probando vosotros mismos. Aun así os dejo aquí un mini resumen. El contenedor viene definido con `flex-direction` a `row`:
+Lo mejor para asimilar lo que hace cada uno es irlo probando vosotros mismos. Aun así os dejo aquí un mini resumen. El contenedor viene definido en todos los casos con `flex-direction` a `row`:
 
 ![](../imgs/maquetacion-con-flexbox/css-flexbox.gif)
 
-Aquí os dejo una [guía completa de flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/).
+Aquí os dejo una [guía completa de flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/) por si queréis indagar más.
 
 ## Hijos
 
@@ -171,6 +171,96 @@ El valor de flex por defecto es `0 1 auto`.
 
 Habiendo explicado el mecanismo de flex, ¿qué podemos hacer con él?
 
-## Multilínea
+```css
+section {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  padding: 0.5rem;
+  background-color: blanchedalmond;
+}
+
+div {
+  background-color: palevioletred;
+  flex: 1;
+  font-size: 2rem;
+  color: white;
+  padding: 2rem;
+  margin: 0.5rem;
+}
+```
+
+![](../imgs/maquetacion-con-flexbox/css-flexbox-flex.png)
+
+Y lo mejor de todo es que podemos alternar los flex para modificar "el peso de un elemento":
+
+```html
+<section>
+  <div>¡Hola mundo!</div>
+  <div class="hello-world">Hello world!</div>
+  <div>Ciao mondo!</div>
+</section>
+```
+
+```css
+.hello-world {
+  flex: 2;
+}
+```
+
+![](../imgs/maquetacion-con-flexbox/css-flexbox-flex-2.png)
+
+## Responsividad avanzada
+
+Vamos a pasar con responsividad. Si maquetamos con flexbox podemos llegar a hacer interacciones como las siguientes:
+
+<video src="../imgs/maquetacion-con-flexbox/css-flex-responsive.webm" style="width: 100%;" autoplay muted loop>
+</video>
+
+Esto se puede hacer con el siguiente HTML:
+
+```html
+<section>
+  <div>¡Hola mundo!</div>
+  <div>Hello world!</div>
+  <div>Ciao mondo!</div>
+  <div>Привет мир!</div>
+  <div>Hallo wereld!</div>
+</section>
+```
+
+Y su CSS pertinente:
+
+```css
+section {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  padding: 0.5rem;
+  background-color: blanchedalmond;
+  flex-wrap: wrap;
+}
+
+div {
+  background-color: palevioletred;
+  font-size: 2rem;
+  color: white;
+  flex: 1 400px;
+  padding: 2rem;
+  margin: 0.5rem;
+}
+```
+
+Hay una propiedad nueva: `flex-wrap`. Esta propiedad se aplica al contenedor y permite disponer a los hijos en varias lineas si surgiese la casuística de que no consiguiesen caber en una única línea.
+
+Otra propiedad importante es `flex: 1 400px;`. Si os acordáis `flex` es un método acortado cuyo primer valor es el máximo que puede abarcar un elemento y la segunda unidad especifica el mínimo que puede abarcar.
+
+Y como en el contenedor hemos dicho que intentase meter todos los elementos posibles lo que hará será hasta que un nuevo elemento de 400px quepa en la fila superior este se repartirá el espacio sobrante entre todos los elementos de esa fila a partes iguales ergo pasará lo que hemos visto en el video.
+
+## Comparativa
+
+Para aquellos que hayan visto [mi tutorial de CSS Grid]() se preguntarán cómo encaja flexbox en la maquetación si ya disponemos de una herramienta como grid. Pues bien, grid se usa para maquetar en __dos dimensiones__ mientras que flexbox se usa comunmente para maquetar en __una dimensión__.
+
+Por ejemplo, supongamos que tenemos una página. La estructura y el layout se haría con grid mientras que las celdas de la grilla bien podrían ser bloques de flexbox.
 
 ## Conclusión
