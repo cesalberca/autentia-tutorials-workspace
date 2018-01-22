@@ -60,7 +60,9 @@ function configMarked() {
   };
 
   myRenderer.code = (code, language) => {
-    return `<pre><code class="lang-${language}">${code.trim()}</code></pre>`;
+    return `<pre><code class="lang-${language}">${escapeHtml(
+      code.trim()
+    )}</code></pre>`;
   };
 
   myRenderer.image = (href, title, text) => {
@@ -136,4 +138,9 @@ function minimizeImages() {
     );
     return;
   });
+}
+
+function escapeHtml(html) {
+  const lessThanEscaped = html.replace(/</g, '&lt;');
+  return lessThanEscaped.replace(/>/g, '&gt;');
 }
