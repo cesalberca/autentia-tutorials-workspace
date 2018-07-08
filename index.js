@@ -6,6 +6,7 @@ const path = require('path');
 const imagemin = require('imagemin');
 const imageminJpegtran = require('imagemin-jpegtran');
 const imageminPngquant = require('imagemin-pngquant');
+const imageminGifsicle = require('imagemin-gifsicle');
 
 const input = 'posts';
 const output = 'dist';
@@ -18,6 +19,7 @@ async function init() {
   configMarked();
   await generateIndexes();
   await minimizeImages();
+  await minimizeGifs();
 
   const postsWithGitkeep = await fs.readdir(input);
   const relativePathPosts = postsWithGitkeep.filter(
@@ -34,7 +36,7 @@ async function init() {
 async function createOutputDirIfNeeded() {
   const doesDirExist = await fs.exists(path.resolve(__dirname, output));
 
-  if (!await fs.exists(path.resolve(__dirname, output))) {
+  if (!doesDirExist) {
     await fs.mkdir(path.resolve(__dirname, output));
     return await fs.writeFile(path.resolve(__dirname, output, '.gitkeep'), '');
   }
@@ -137,6 +139,17 @@ function minimizeImages() {
       `Minimized ${images.length} images` + ' succesfully'.green + '\n'
     );
     return;
+  });
+}
+
+function minimizeGifs() {
+  console.log('Minimizing gifs...'.blue);
+  return imagemin(['images/*.gif'], 'build/images', {
+    use: [imageminGifsicle()]
+  }).then(images => {
+    console.log(
+      `Minimized ${images.length} images` + ' succesfully'.green + '\n'
+    );
   });
 }
 

@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "husky": "^0.14.3",
+    "imagemin-gifsicle": "^5.2.0",
     "imagemin-jpegtran": "^5.0.2",
     "imagemin-pngquant": "^5.0.1",
     "lint-staged": "^4.0.3",
