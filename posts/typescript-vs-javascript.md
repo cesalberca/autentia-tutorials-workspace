@@ -1,20 +1,20 @@
+Cómo sobrevivir a un proyecto grande de JavaScript: Oda a TypeScript. En este tutorial compararemos JavaScript con TypeScript y veremos lo que nos ofrece y por qué hará que tengamos hasta un 15% de bugs menos.
+<!--more-->
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 ## Índice
 
-- [TypeScript vs JavaScript](#typescript-vs-javascript)
-  - [1. Introducción](#1-introducci%C3%B3n)
-  - [2. Introducción a TypeScript](#2-introducci%C3%B3n-a-typescript)
-  - [3. Características del lenguaje](#3-caracter%C3%ADsticas-del-lenguaje)
-  - [4. Desventajas](#4-desventajas)
-  - [5. Ejemplo](#5-ejemplo)
-  - [6. Comparativa](#6-comparativa)
-  - [7. Comparativa con código real](#7-comparativa-con-c%C3%B3digo-real)
-  - [8. Conclusión](#8-conclusi%C3%B3n)
+- [1. Introducción](#1-introducci%C3%B3n)
+- [2. Introducción a TypeScript](#2-introducci%C3%B3n-a-typescript)
+- [3. Características del lenguaje](#3-caracter%C3%ADsticas-del-lenguaje)
+- [4. Desventajas](#4-desventajas)
+- [5. Ejemplo](#5-ejemplo)
+- [6. Comparativa](#6-comparativa)
+- [7. Comparativa con código real](#7-comparativa-con-c%C3%B3digo-real)
+- [8. Conclusión](#8-conclusi%C3%B3n)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# TypeScript vs JavaScript
 
 ## 1. Introducción
 
@@ -22,7 +22,7 @@ Históricamente JavaScript ha sido conocido por su flexibilidad, pero, en proyec
 ¿A qué nos referimos con ser laxos? Pues a que la experiencia del desarrollo se vuelve una carga, dado que:
 
 * Desconocemos los tipos con los que tratamos.
-* La introducción de bugs puede aumentar hasta un 15% en producción. (https://blog.acolyer.org/2017/09/19/to-type-or-not-to-type-quantifying-detectable-bugs-in-javascript/),
+* La introducción de bugs puede aumentar hasta un 15% en producción. (https://blog.acolyer.org/2017/09/19/to-type-or-not-to-type-quantifying-detectable-bugs-in-javascript/).
 * La documentación exhaustiva del código es necesaria para determinar con qué estructuras de datos estamos tratando.
 * Las ayudas del lenguaje son nimias.
 * Los refactors automáticos prácticamente son inexistentes (resulta casi imposible hasta cosas tan sencillas como cambiar de nombre una variable o función).
@@ -180,4 +180,4 @@ Además, en el primer ejemplo, para saber qué propiedades tiene el listado de i
 
 ## 8. Conclusión
 
-...
+TypeScript ofrece unas ventajas sobre JavaScript innegables, el overhead que introduce está más que justificado y la curva de aprendizaje es muy liviana, ya que recordemos, TypeScript no es más que un superset de JavaScript, dando a JavaScript nuevas funcionalidades pero respetando su esencia.
