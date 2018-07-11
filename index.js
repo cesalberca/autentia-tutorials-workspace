@@ -121,7 +121,7 @@ async function parseToHtml(content) {
 }
 
 function generateIndexes() {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     console.log('Generating indexes...'.blue);
     npmRun.exec('./node_modules/.bin/doctoc --title "## Índice" posts', () => {
       console.log('Indexes generated', 'succesfully'.green + '\n');
@@ -144,7 +144,8 @@ function minimizeImages() {
 
 function minimizeGifs() {
   console.log('Minimizing gifs...'.blue);
-  return imagemin(['images/*.gif'], 'build/images', {
+  return imagemin(['./imgs/**/*.gif'], './dist/imgs', {
+    optimizationLevel: 3,
     use: [imageminGifsicle()]
   }).then(images => {
     console.log(
