@@ -7,6 +7,7 @@ const imagemin = require('imagemin');
 const imageminJpegtran = require('imagemin-jpegtran');
 const imageminPngquant = require('imagemin-pngquant');
 const imageminGifsicle = require('imagemin-gifsicle');
+const cheerio = require('cheerio');
 
 const input = 'posts';
 const output = 'dist';
@@ -18,8 +19,8 @@ async function init() {
   await createOutputDirIfNeeded();
   configMarked();
   await generateIndexes();
-  await minimizeImages();
-  await minimizeGifs();
+  // await minimizeImages();
+  // await minimizeGifs();
 
   const postsWithGitkeep = await fs.readdir(input);
   const relativePathPosts = postsWithGitkeep.filter(
@@ -100,6 +101,9 @@ function convertPost(postPath) {
       console.log(`  - Parsed`.green);
       return parseToHtml(content);
     })
+    .then(html => {
+      return removeAccents(html);
+    })
     .then(parsedContent => {
       console.log(`  - Saved`.green);
       savePost(postPath, parsedContent);
@@ -128,6 +132,20 @@ function generateIndexes() {
       resolve();
     });
   });
+}
+
+function removeAccents(content) {
+  const $ = cheerio.load(content);
+  console.log(
+    $('#-ndice + ul')
+      .find('a')
+      .map(function(e, i) {
+        i.attribs = decodeURIComponent(attribs);
+        console.log($(this).attr('href'));
+        return $(this).attr('href');
+      })
+  );
+  return content;
 }
 
 function minimizeImages() {
