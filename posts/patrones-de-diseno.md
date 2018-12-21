@@ -688,7 +688,7 @@ El `forceUpdate` no hace que se renderice de nuevas todo el árbol, React sigue 
 
 Ahora veremos cuánto cuesta añadir nueva funcionalidad como nos pedía el usuario:
 
-Primero añadimos un nuevo estado en `State`
+Primero añadimos unos nuevos estados en `State`
 
 ```ts
 import { FakeUser } from '../../fakeUser/FakeUser'
@@ -698,6 +698,7 @@ export interface State {
   hasError: boolean
   hasSuccess: boolean
   hasWarning: boolean
+  userHasAcknowledgedWarning: boolean
   users: FakeUser[]
 }
 ```
@@ -712,6 +713,7 @@ export class StateManager implements Subject {
       hasError: false,
       hasSuccess: false,
       hasWarning: false,
+      userHasAcknowledgedWarning: false,
       users: []
     }
   }
@@ -721,7 +723,77 @@ export class StateManager implements Subject {
     this.state.hasError = false
     this.state.hasSuccess = false
     this.state.hasWarning = false
+    this.state.userHasAcknowledgedWarning = false
     this.state.users = []
+  }
+}
+```
+
+Creamos una clase `RequestWarningHandler`:
+
+```ts
+import { Handler } from './Handler'
+import { RequestHandlerContext } from './RequestHandler'
+import { RequestEmptyHandler } from './RequestEmptyHandler'
+import { wait } from '../utils/wait'
+import { RequestStartHandler } from './RequestStartHandler'
+
+export class RequestWarningHandler<T> implements Handler<RequestHandlerContext<T>> {
+  private nextHandler: Handler<RequestHandlerContext<T>> = new RequestEmptyHandler()
+
+  public async next(context: RequestHandlerContext<T>) {
+    context.stateManager.state.hasWarning = true
+    await wait(2.5)
+    if (context.stateManager.state.userHasAcknowledgedWarning) {
+      this.setNext(new RequestStartHandler())
+    }
+
+    await this.nextHandler.next(context)
+    context.stateManager.state.hasWarning = false
+  }
+
+  public setNext(handler: Handler<RequestHandlerContext<T>>) {
+    this.nextHandler = handler
+  }
+}
+```
+
+Si el usuario no acepta el warning en un marco de 2 segundos y medio no comenzará la petición, ya que se irá añ `RequestEmptyHandler`. Y modificamos el método `trigger` de la clase `RequestHandler`:
+
+```ts
+import { Handler } from './Handler'
+import { RequestStartHandler } from './RequestStartHandler'
+import { RequestEmptyHandler } from './RequestEmptyHandler'
+import { StateManager } from '../application/state/StateManager'
+import { RequestResponseHandler } from './RequestResponseHandler'
+import { Request } from '../Request'
+import { RequestWarningHandler } from './RequestWarningHandler'
+
+export type RequestHandlerContext<T> = {
+  stateManager: StateManager
+  request: Promise<T>
+  response: Request.Payload<T>
+}
+
+export class RequestHandler<T> {
+  ...
+
+  public async trigger(request: Promise<T>, hasWarning: boolean = false): Promise<Request.Success<T> | Request.Fail> {
+    const response: Request.Payload<T> = {
+      hasError: false,
+      value: null
+    }
+
+    if (hasWarning) {
+      this.requestStartHandler.setNext(new RequestWarningHandler())
+    }
+
+    await this.requestStartHandler.next({ stateManager: this.state, request, response })
+
+    if (response.hasError) {
+      return new Request.Fail()
+    }
+    return new Request.Success(response.value as T)
   }
 }
 ```
