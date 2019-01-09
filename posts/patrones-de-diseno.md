@@ -197,7 +197,6 @@ import { RequestEmptyHandler } from './RequestEmptyHandler'
 import { StateManager } from '../application/state/StateManager'
 import { RequestResponseHandler } from './RequestResponseHandler'
 import { Request } from '../Request'
-import { RequestWarningHandler } from './RequestWarningHandler'
 import { Handler } from './Handler'
 
 export type RequestHandlerContext = {
@@ -212,16 +211,6 @@ export class RequestHandler {
 
   constructor(private readonly state: StateManager) {}
 
-  private setHandlers(): void {
-    const requestStartHandler = new RequestStartHandler()
-    const requestResponseHandler = new RequestResponseHandler()
-    const requestEmptyHandler = new RequestEmptyHandler()
-
-    this.nextHandler = new RequestStartHandler()
-    this.nextHandler.setNext(requestResponseHandler)
-    requestResponseHandler.setNext(requestEmptyHandler)
-  }
-
   public async trigger<T>(
     callback: () => Promise<T>
   ): Promise<Request.Success<T> | Request.Fail> {
@@ -230,15 +219,14 @@ export class RequestHandler {
       value: null
     }
 
-    this.setHandlers()
-    
+    this.nextHandler = this.getNextHandler()
     const context: RequestHandlerContext = {
       stateManager: this.state,
       callback,
       request: null,
       response
     }
-    
+
     context.stateManager.setEmptyState()
     await this.nextHandler.next(context)
 
@@ -248,12 +236,22 @@ export class RequestHandler {
 
     return new Request.Success((response.value as unknown) as T)
   }
+
+  private getNextHandler(): Handler<RequestHandlerContext> {
+    const requestResponseHandler = new RequestResponseHandler()
+    const requestEmptyHandler = new RequestEmptyHandler()
+
+    const handler = new RequestStartHandler()
+    handler.setNext(requestResponseHandler)
+    requestResponseHandler.setNext(requestEmptyHandler)
+    return handler
+  }
 }
 ```
 
 Aquí básicamente creamos la cadena de `Handlers`, les decimos a cada uno cual es su siguiente elemento de la cadena y exponemos a los clientes un método sobre el que pueden iniciar la cadena, que es el método `trigger`, el cual recibirá una función que retorna una promesa, que es la petición en sí. El `trigger` además retorna los valores o un error.
 
-Lo que parece un objeto `Reqeuest` realmente es un namespace de TypeScript, donde agrupo las cosas que tienen que ver con el objeto petición (`Request`):
+Lo que parece un objeto `Request` realmente es un namespace de TypeScript, donde agrupo las cosas que tienen que ver con el objeto petición (`Request`):
 
 ```typescript
 export namespace Request {
@@ -283,9 +281,9 @@ Ahora tenemos un problema, el lector atento habrá visto que en el objeto `conte
 context.state.currentState.isLoading = false
 ```
 
-Pero claro, ¿cómo hacemos para que nuestra vista se renderice una vez el estado cambia? Porque según nuestra historia de usuario tenemos que representar varios estados del cargando.
+Esto es parte de la solución que se da al problema de recargar en la vista cuando un valor cambiar. Porque según nuestra historia de usuario tenemos que representar varios estados del cargando de forma dinámica.
 
-Esto podemos hacerlo con un Proxy de JavaScript, que curiosamente implementa el patrón [Proxy](https://en.wikipedia.org/wiki/Proxy_pattern) por debajo, que será donde guardemos el estado. En este Proxy, podremos capturar todas las mutaciones de sus valores. Y teniendo esto, solamente nos hace falta conectar los componentes de nuestra aplicación con este estado, que es de la siguiente forma:
+Esto podemos hacerlo con un [Proxy de JavaScript](), que curiosamente implementa el patrón [Proxy](https://en.wikipedia.org/wiki/Proxy_pattern) por debajo, que será donde guardemos el estado. En este Proxy, podremos capturar todas las mutaciones de sus valores. Y teniendo esto, solamente nos hace falta conectar los componentes de nuestra aplicación con este estado, que es de la siguiente forma:
 
 ```typescript
 import { State } from './State'
@@ -404,7 +402,7 @@ Nos quedaría únicamente definir los observadores, pero eso lo veremos más ade
 
 ## Singleton
 
-Si pensamos el caso de uso del estado, nunca tendrían sentido dos instancias o más de `StateManager`. Para evitar crear instancias de más tenemos el patrón [Singleton](https://en.wikipedia.org/wiki/Singleton_pattern). Para ello añadimos un campo a la clase llamado `instance`:
+Si pensamos el caso de uso del estado, nunca tendrían sentido dos instancias o más de `StateManager`. Para evitar crear instancias de más tenemos el patrón [Singleton](https://en.wikipedia.org/wiki/Singleton_pattern). Para ello añadimos un campo a la clase llamado `instance` cuyo valor por defecto será `null`:
 
 ```typescript
 class StateManager implements Subject {
@@ -429,6 +427,68 @@ export class StateManager implements Subject {
 ```
 
 Por último cambiamos la visibilidad del constructor de pública a privada, para que únicamente se pueda obtener la instancia de la clase por el getter `instance`.
+
+El resultado sería el siguiente:
+
+```typescript
+import { Subject } from './Subject'
+import { Observer } from './Observer'
+import { State } from './State'
+
+export class StateManager implements Subject {
+  private readonly _observers: Observer[] = []
+
+  public state: State
+
+  private static _instance: StateManager | null = null
+
+  public static get instance() {
+    if (this._instance === null) {
+      this._instance = new StateManager()
+    }
+
+    return this._instance
+  }
+
+  private constructor() {
+    this.state = new Proxy(this.getEmptyState(), {
+      set: (
+        target: State,
+        p: PropertyKey,
+        value: any,
+        receiver: any
+      ): boolean => {
+        Reflect.set(target, p, value, receiver)
+        this.notifyAll()
+        return true
+      }
+    })
+  }
+
+  public getEmptyState(): State {
+    return {
+      isLoading: false,
+      hasError: false,
+      hasSuccess: false,
+      users: []
+    }
+  }
+
+  public setEmptyState(): void {
+    this.state.isLoading = false
+    this.state.hasError = false
+    this.state.hasSuccess = false
+  }
+
+  public notifyAll() {
+    this._observers.forEach(observer => observer.notify())
+  }
+
+  public register(observer: Observer) {
+    this._observers.push(observer)
+  }
+}
+```
 
 ## React
 
