@@ -400,6 +400,21 @@ export class StateManager implements Subject {
 
 Nos quedaría únicamente definir los observadores, pero eso lo veremos más adelante.
 
+El tipo `State` no es más que una interfaz con el siguiente contenido:
+
+```typescript
+import { FakeUser } from '../../fakeUser/FakeUser'
+
+export interface State {
+  isLoading: boolean
+  hasError: boolean
+  hasSuccess: boolean
+  hasWarning: boolean
+  userHasCanceledOperation: boolean
+  users: FakeUser[]
+}
+```
+
 ## Singleton
 
 Si pensamos el caso de uso del estado, nunca tendrían sentido dos instancias o más de `StateManager`. Para evitar crear instancias de más tenemos el patrón [Singleton](https://en.wikipedia.org/wiki/Singleton_pattern). Para ello añadimos un campo a la clase llamado `instance` cuyo valor por defecto será `null`:
@@ -868,7 +883,7 @@ El `forceUpdate` no hace que se renderice de nuevas todo el árbol, React sigue 
 
 ## Nueva feature
 
-Ahora veremos cuánto cuesta añadir nueva funcionalidad como nos pedía el usuario:
+Ahora veremos cuánto cuesta añadir nueva funcionalidad. El usuario ahora quiere que se muestre un botón que permite borrar a los usuarios. Pero antes de ello, se debe mostrar un mensaje advirtiendo al usuario que se va a proceder con una operación destructiva. El usuario va a poder cancelar la operación antes de 2.5 segundos. Si no hace nada se procederá con la petición destructiva.
 
 Primero añadimos unos nuevos estados en `State`: `hasWarning` y `userHasCanceledOperation`. La interfaz quedaría así:
 
@@ -888,10 +903,40 @@ export interface State {
 Dentro del `StateManager` le damos un valor vacío y le decimos que cuando hay un estado vacío debe poner el `hasWarning` y el `userHasCanceledOperation` a `false`:
 
 ```typescript
-export class StateManager implements Subject {
+import { Subject } from './Subject'
+import { Observer } from './Observer'
+import { State } from './State'
 
-  ...
-  
+export class StateManager implements Subject {
+  private readonly _observers: Observer[] = []
+
+  public state: State
+
+  private static _instance: StateManager | null = null
+
+  public static get instance() {
+    if (this._instance === null) {
+      this._instance = new StateManager()
+    }
+
+    return this._instance
+  }
+
+  private constructor() {
+    this.state = new Proxy(this.getEmptyState(), {
+      set: (
+        target: State,
+        p: PropertyKey,
+        value: any,
+        receiver: any
+      ): boolean => {
+        Reflect.set(target, p, value, receiver)
+        this.notifyAll()
+        return true
+      }
+    })
+  }
+
   public getEmptyState(): State {
     return {
       isLoading: false,
@@ -909,6 +954,14 @@ export class StateManager implements Subject {
     this.state.hasSuccess = false
     this.state.hasWarning = false
     this.state.userHasCanceledOperation = false
+  }
+
+  public notifyAll() {
+    this._observers.forEach(observer => observer.notify())
+  }
+
+  public register(observer: Observer) {
+    this._observers.push(observer)
   }
 }
 ```
@@ -943,7 +996,7 @@ export class RequestWarningHandler implements Handler<RequestHandlerContext> {
 }
 ```
 
-Si el usuario no acepta el warning en un marco de 2 segundos y medio no comenzará la petición, ya que se irá al `RequestEmptyHandler`. Además, vemos una función `waitUntilOr` que tiene el siguiente contenid:
+Si el usuario no acepta el warning en un marco de 2 segundos y medio no comenzará la petición, ya que se irá al `RequestEmptyHandler`. Además, vemos una función `waitUntilOr` que tiene el siguiente contenido:
 
 ```typescript
 export async function waitUntilOr(seconds: number, value: () => boolean): Promise<void> {
@@ -1002,7 +1055,7 @@ export class RequestHandler {
       value: null
     }
 
-    this.nextHandler = this.getHandlers(hasWarning)
+    this.nextHandler = this.getNextHandler(hasWarning)
     const context: RequestHandlerContext = {
       stateManager: this.state,
       callback,
@@ -1020,7 +1073,7 @@ export class RequestHandler {
     return new Request.Success((response.value as unknown) as T)
   }
 
-  private getHandlers(hasWarning: boolean): Handler<RequestHandlerContext> {
+  private getNextHandler(hasWarning: boolean): Handler<RequestHandlerContext> {
     if (hasWarning) {
       return this.getWarningHandlers()
     }
@@ -1053,6 +1106,180 @@ export class RequestHandler {
 }
 ```
 
+Añadir al repositorio génerico `Repository` el método de `deleteAll`:
+
+```typescript
+export interface Repository<T> {
+  findAll: () => Promise<T[]>
+  deleteAll: () => Promise<void>
+}
+```
+
+Y lo implementamos en el `FakeUserHttpRepository`:
+
+```typescript
+import { FakeUserRepository } from './FakeUserRepository'
+import { RequestHandler } from '../requestHandlers/RequestHandler'
+import { Request } from '../Request'
+import { wait } from '../utils/wait'
+import { FakeUser } from './FakeUser'
+
+export class FakeUserHttpRepository implements FakeUserRepository {
+  private fakeUsers: FakeUser[] = [{ name: 'César' }, { name: 'Paco' }, { name: 'Alejandro' }]
+
+  constructor(private readonly requestHandler: RequestHandler) {}
+
+  public async findAll(): Promise<FakeUser[]> {
+    const callback = () => this.getFakeUsers()
+
+    const response = await this.requestHandler.trigger<FakeUser[]>(callback)
+
+    if (response instanceof Request.Fail) {
+      throw new Error('users could not be found.')
+    }
+
+    return response.value
+  }
+
+  public async deleteAll() {
+    const callback: () => Promise<void> = () =>
+      new Promise(async resolve => {
+        await wait(1)
+        this.fakeUsers = []
+        resolve()
+      })
+
+    await this.requestHandler.trigger<void>(callback, true)
+  }
+
+  private async getFakeUsers(): Promise<FakeUser[]> {
+    await wait(1)
+    const hasError = Math.random() >= 0.5
+
+    if (hasError) {
+      throw new Request.Fail()
+    }
+
+    return this.fakeUsers
+  }
+}
+``` 
+
+Por último, añadimos al contenedor el botón. Ahora nuestro contenedor tendrá un estado interno que nos dirá si se debe mostrar un warning:
+
+```typescript jsx
+import React, { Component } from 'react'
+import { StateManager } from './state/StateManager'
+import { Observer } from './state/Observer'
+import { Light, LightStates } from './Light'
+import { Consumer } from './rootContainer'
+
+interface Props {
+  stateManager: StateManager
+}
+
+interface State {
+  isWarningVisible: boolean
+}
+
+export class LightContainer extends Component<Props, State> implements Observer {
+  public constructor(props: Props) {
+    super(props)
+    this.state = {
+      isWarningVisible: false
+    }
+  }
+
+  public componentDidMount(): void {
+    this.props.stateManager.register(this)
+  }
+
+  private getState = (): LightStates => {
+    if (this.props.stateManager.state.isLoading) {
+      return 'loading'
+    }
+
+    if (this.props.stateManager.state.hasError) {
+      return 'error'
+    }
+
+    if (this.props.stateManager.state.hasSuccess) {
+      return 'success'
+    }
+
+    return 'none'
+  }
+
+  private toggleWarning = () => {
+    this.setState((previousState) => ({
+      isWarningVisible: !previousState.isWarningVisible
+    }))
+  }
+
+  public render(): React.ReactNode {
+    const { state } = this.props.stateManager
+
+    return (
+      <Consumer>
+        {context => (
+          <div className="light-controller">
+            <Light state={this.getState()} />
+            <button
+              disabled={state.isLoading}
+              className={`button ${state.isLoading ? 'button--disabled' : ''}`}
+              onClick={async () => {
+                state.users = await context.fakeUserRepository.findAll()
+              }}
+            >
+              Get users
+            </button>
+
+            {!(state.hasWarning && this.state.isWarningVisible) ? (
+              <button
+                className="button"
+                onClick={async () => {
+                  this.toggleWarning()
+                  await context.fakeUserRepository.deleteAll()
+
+                  if (!state.userHasCanceledOperation) {
+                    state.users = await context.fakeUserRepository.findAll()
+                  }
+                }}
+              >
+                Delete users
+              </button>
+            ) : (
+              <button
+                className="button button--warning"
+                onClick={() => {
+                  state.userHasCanceledOperation = true
+                  this.toggleWarning()
+                }}
+              >
+                Cancel delete users
+              </button>
+            )}
+
+            <h3>Users</h3>
+            {state.users.map(user => (
+              <p key={user.name}>{user.name}</p>
+            ))}
+          </div>
+        )}
+      </Consumer>
+    )
+  }
+
+  public notify() {
+    this.forceUpdate()
+  }
+}
+```
+
 ## Conclusión
 
-Hemos visto un montón de patrones (Singleton, Observador, Chain of responsability, Proxy, Mediator), junto con separación de capas con repositorios, estado y componentes
+Hemos visto un montón de patrones (Singleton, Observador, Chain of responsibility, Proxy, Mediator), junto con separación de capas con repositorios, estado y componentes. Hemos comprobado que si nuestro código cumple SOLID será más fácil lidiar con el, más mantenible y aceptará mejor el cambio.
+
+El código pobrás verlo en mi Github: [https://github.com/cesalberca/frontend-patterns](https://github.com/cesalberca/frontend-patterns).
+
+¡No olvides seguirme en [Twitter](https://twitter.com/)!
