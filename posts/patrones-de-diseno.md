@@ -1,55 +1,81 @@
 #
 
-El mundo frontend es conocido por su gran volatilidad, sin embargo poco hacemos para que esta volatilidad no afecte a nuestros desarrollos. Nos importa últimamente estar más a la última del framework del momento que de aprender técnicas para escribir nuestro código de tal forma que nos costase muy poco cambiarlo. Así que este tutorial irá en pos de hacer una aplicación lo más "Frameworkless" posible.
+El mundo frontend es conocido por su gran _volatilidad_, sin embargo poco hacemos para que esta volatilidad no afecte a nuestros desarrollos. Nos importa últimamente estar más __a la última del framework del momento que de aprender a hacer nuestro código más mantenible__. Así que este tutorial irá en pos de hacer una aplicación lo más _"Frameworkless"_ posible.
 
 ## Problema
 
-Nuestro usuario tiene el siguiente problema: dado que su aplicación Web es altamente interactiva y hace uso de técnicas como carga de datos en diferido es necesario mostrar inicialmente una luz en gris, en el momento en que comienza una petición se motrará una luz en azul, si la petición actual ha ido bien mostrar una luz en verde y si no una luz en rojo. Si se vuelve a peticionar algo ya antes peticionado se volverá a mostrar la luz azul.
+Nuestro usuario tiene el siguiente problema: dado que su aplicación Web es altamente interactiva y hace uso de técnicas como carga de datos en diferido es necesario mostrar al usuario de los distintos estados de la aplicación.
 
-El usuario prevée que querrá añadir algún aviso sobre algunas peticiones que sean destructivas, como el borrado de una entidad, y además querría mostrar la luz en ambar.
+Inicialmente, al no haber cargado nada se mostrará una luz en gris: ![Sin cargar](./../imgs/frontend-patterns/light-none.png)
 
-Por supuesto nuestro usuario necesita que todas las peticiones se comporten así, pudiendo en alguno lugares añadir gestiones más especiales para capturar errores más específicos.
+En el momento en que comienza una petición se mostrará una luz en azul:
+
+![Cargando](./../imgs/frontend-patterns/light-loading.png)
+ 
+Si la petición actual ha ido bien mostrar una luz en verde:
+ 
+![Éxito](./../imgs/frontend-patterns/light-success.png)
+
+Y si no, una luz en rojo.
+
+![Error](./../imgs/frontend-patterns/light-error.png)
+
+Si se vuelve a peticionar algo se volverá a mostrar la luz azul.
+
+El usuario prevé que querrá añadir algún aviso sobre algunas peticiones que sean destructivas, como el borrado de una entidad, y además querría mostrar la luz en ambar.
+
+Por supuesto nuestro usuario necesita que _todas_ las peticiones por defecto se comporten así, pudiendo en alguno lugares añadir gestiones más especiales para capturar errores más específicos.
 
 Además es necesario recuperar los datos de la petición.
 
 ## Solución
 
-### Chain of responsability
+La solución que he ideado parte de un enfoque más simple, sobre el que he ido iterando para poder extender fácilmente mi código para adaptarme a nuevas historias de usuario. Para ello he usado una serie de patrones de diseño que me ayudaran a gestionar de mejor forma el código. Usaremos [TypeScript]() y [React]().
 
-Le gestión de una petición asíncrona tiene que ir pasando por una serie de estados: __inicio de la petición__, __respuesta de la petición__ que a su vez se divide en: __petición resuelta con éxito__ y __petición fallida__. Y además este ciclo es lineal. Incluso se podría decir que es una _cadena_.
+### Chain of responsibility
 
-Para este tipo de gestiones existe un patrón de diseño llamado [chain of responsability](https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern) que lo que pretende es gestionar el procesamiento de objetos siendo cada objeto el que tenga la lógica de procesado. Es decir, este patrón nos puede ahorrar un montón de `if` y `else`s, haciendo cumplir el principio de [Open/Closed](https://codeburst.io/understanding-solid-principles-open-closed-principle-e2b588b6491f) de [SOLID](https://scotch.io/bar-talk/s-o-l-i-d-the-first-five-principles-of-object-oriented-design) (abierto a la extensión, cerrado a la modificación).
+Le gestión de una petición asíncrona tiene que ir pasando por una serie de estados: __inicio de la petición__, __respuesta de la petición__ que a su vez se divide en: __petición resuelta con éxito__ y __petición fallida__. Y además, este ciclo es lineal. Incluso se podría decir que es una _cadena_.
+
+Para este tipo de gestiones existe un patrón de diseño llamado [chain of responsability](https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern) que lo que pretende es gestionar el procesamiento de objetos siendo cada objeto el que tenga la lógica de procesado. Es decir, este patrón nos puede ahorrar un montón de `if` y `else`s y haciendo cumplir el principio de [Open/Closed](https://codeburst.io/understanding-solid-principles-open-closed-principle-e2b588b6491f) de [SOLID](https://scotch.io/bar-talk/s-o-l-i-d-the-first-five-principles-of-object-oriented-design) (abierto a la extensión, cerrado a la modificación) como veremos más adelante.
 
 ¡Así que vamos a ello! Vamos a empezar por la interfaz `Handler`:
 
-```ts
+```typescript
 export interface Handler<T> {
   next: (context: T) => void
   setNext: (handler: Handler<T>) => void
 }
 ```
 
-Esta describe dos métodos. El primero es una función que invocará el siguiente handler de la cadena, pudiendo pasar un objeto `context`. Este `context` nos servirá para ir realizando las operaciones pertinentes sobre la petición que ya veremos más adelante.
+La interfaz recibe un genérico, con lo cual esta interfaz nos valdría para otras cadenas.
 
-El método `setNext` nos permite definir el siguiente objeto de la cadena, recibiéndo a su vez un `Handler`.
+Esta interfaz describe dos métodos. El primero es una función que invocará el siguiente handler de la cadena, pudiendo pasar un objeto `context`. Este `context` nos servirá para ir realizando las operaciones pertinentes sobre la petición o el estado de la aplicación.
+
+El método `setNext` nos permite definir el siguiente objeto de la cadena, recibiendo a su vez un `Handler`.
 
 Ahora bien, ¿cómo sería la implementación de un `Handler`? Pues sería algo tal que así:
 
-```ts
+  
+
+```typescript
 import { Handler } from './Handler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
 import { RequestHandlerContext } from './RequestHandler'
 
-export class RequestStartHandler<T> implements Handler<RequestHandlerContext<T>> {
-  private nextHandler: Handler<RequestHandlerContext<T>> = new RequestEmptyHandler()
+export class RequestStartHandler implements Handler<RequestHandlerContext> {
+  // Aquí debemos definir el super tipo de RequestEmptyHandler que es Handler<RequestHandlerContext>
+  private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
 
-  public async next(context: RequestHandlerContext<T>) {
-    context.state.setEmptyState()
-    context.state.currentState.isLoading = true
+  public async next(context: RequestHandlerContext) {
+    context.stateManager.state.isLoading = true
+
+    // Comenzamos la petición y la guardamos en el objeto context
+    context.request = context.callback()
+
     await this.nextHandler.next(context)
   }
 
-  public setNext(handler: Handler<RequestHandlerContext<T>>) {
+  public setNext(handler: Handler<RequestHandlerContext>) {
     this.nextHandler = handler
   }
 }
@@ -57,83 +83,83 @@ export class RequestStartHandler<T> implements Handler<RequestHandlerContext<T>>
 
 En el método `next` tendremos la gestión del comienzo de una petición, dado que tiene que pasar lo siguiente:
 
-* Resetear el estado a vacío
 * Poner el estado a cargando
+* Invocar la función que hará la petición (es una callback para conseguir una evaluación `lazy`)
 * Invocar al siguiente elemento de la cadena
 
-También vemos que se da un valor por defecto al `nextHandler` que es el `RequestEmptyHandler`. Este handler vacío lo que hace es... nada. Este es el handler por si en algún momento se intenta llamar al `next` del último handler. ¿Su implementación? De las más sencillas:
+También vemos que se da un valor por defecto al `nextHandler` que es el `RequestEmptyHandler`. Este handler vacío lo que hace es... nada. Este es el handler por si en algún momento se intenta llamar al `next` del último handler. ¿Su implementación? Muy sencilla:
 
-```ts
+```typescript
 import { Handler } from './Handler'
 import { RequestHandlerContext } from './RequestHandler'
 
-export class RequestEmptyHandler<T> implements Handler<RequestHandlerContext<T>> {
+export class RequestEmptyHandler implements Handler<RequestHandlerContext> {
   public async next() {}
 
   public setNext() {}
 }
 ```
 
-Como hemos dicho antes, después de la petición hay una respuesta, que a su vez sería un `Handler`. Aunque este `Handler` es a su vez un poco especial, dado que debe poder gestionar una respuesta con éxito o una respuesta fallida:
+Como hemos dicho antes, después de la petición hay una respuesta, que a su vez sería un `Handler`. Aunque este `Handler` es a su vez un poco especial, dado que debe poder gestionar una __respuesta con éxito__ o __una respuesta fallida__:
 
-```ts
+```typescript
 import { Handler } from './Handler'
 import { RequestErrorHandler } from './RequestErrorHandler'
 import { RequestSuccessHandler } from './RequestSuccessHandler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
 import { RequestHandlerContext } from './RequestHandler'
 
-export class RequestResponseHandler<T> implements Handler<RequestHandlerContext<T>> {
-  private nextHandler: Handler<RequestHandlerContext<T>> = new RequestEmptyHandler()
+export class RequestResponseHandler implements Handler<RequestHandlerContext> {
+  private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
 
-  private requestErrorHandler: Handler<RequestHandlerContext<T>> = new RequestErrorHandler<T>()
-  private requestSuccessHandler: Handler<RequestHandlerContext<T>> = new RequestSuccessHandler<T>()
+  private requestErrorHandler = new RequestErrorHandler()
+  private requestSuccessHandler = new RequestSuccessHandler()
 
   constructor() {
-    this.requestErrorHandler.setNext(new RequestEmptyHandler<T>())
-    this.requestSuccessHandler.setNext(new RequestEmptyHandler<T>())
+    this.requestErrorHandler.setNext(new RequestEmptyHandler())
+    this.requestSuccessHandler.setNext(new RequestEmptyHandler())
   }
 
-  public async next(context: RequestHandlerContext<T>) {
+  public async next(context: RequestHandlerContext) {
     try {
       context.response.value = await context.request
       this.setNext(this.requestSuccessHandler)
-      await this.nextHandler.next(context)
     } catch (e) {
       this.setNext(this.requestErrorHandler)
-      await this.nextHandler.next(context)
     } finally {
-      // Esta línea de código es muy interesante, ya que... ¿En qué momento se ejecuta?
-      context.state.currentState.isLoading = false
+      await this.nextHandler.next(context)
+      context.stateManager.state.isLoading = false
     }
   }
 
-  public setNext(handler: Handler<RequestHandlerContext<T>>) {
+  public setNext(handler: Handler<RequestHandlerContext>) {
     this.nextHandler = handler
   }
 }
 ```
 
-Aquí vemos varias cosas, dentro de este `Handler` tenemos un `RequestErrorHandler` y un `RequestSuccessHandler`, y es en el `next` donde determina qué camino ha de seguir y una vez lo ha decidido invoca al `next`. Cómo todos los `Handler`s implementan la misma interfaz aquí vemos la magia del polimorfismo, donde a esta clase poco le importa cuál sea el siguiente `Handler`, este se preocupa de elegir el camino correcto, ya serán el resto de `Handlers` quienes determinen qué tienen que hacer (esto hace que sigamos la S de [SOLID](https://en.wikipedia.org/wiki/SOLID))(Single responsability principle).
+Aquí vemos varias cosas, dentro de este `Handler` tenemos un `RequestErrorHandler` y un `RequestSuccessHandler`, y es en el `next` donde se determina qué camino ha de seguir la cadena. Una vez se ha decidido dicho camino se invoca al método `next`.
 
-Y además vemos algo muy interesante, en el `finally` decimos que `context.state.currentState.isLoading` se ponga a `false`. Pero si vemos un poco más arriba, hacemos `await` de la llamada al siguiente handler, lo que quiere decir esto que estamos __mutando el estado una vez se ha ejecuta el siguiente handler__. Esto nos puede venir de perlas si no quisiésemos parar la ejecución del programa o si quisiésemos ejecutar algo a posteriori a modo de "limpieza". En este caso una vez resuelto la petición con éxito o con error, queremos que se cambie el estado a cargado.
+Cómo todos los `Handler`s implementan la misma interfaz aquí vemos la magia del [polimorfismo](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)), donde a esta clase poco le importa cuál sea el siguiente `Handler`, este se preocupa de elegir el camino correcto, ya serán el resto de `Handlers` quienes determinen qué tienen que hacer (esto hace que sigamos la S de [SOLID](https://en.wikipedia.org/wiki/SOLID))(Single responsibility principle).
+
+Y además vemos algo muy interesante, en el `finally` decimos que `context.state.currentState.isLoading` se ponga a `false`. Pero si vemos un poco más arriba, hacemos `await` de la llamada al siguiente handler, lo que quiere decir esto que estamos __mutando el estado una vez se ha ejecuta el siguiente handler__. Esto nos puede venir de perlas si no quisiésemos parar la ejecución del programa o si quisiésemos ejecutar algo a posteriori a modo de "limpieza". En este caso una vez resuelto la petición con éxito o con error, queremos que se cambie el estado a cargado y no antes.
 
 La clase de éxito de la petición es `RequestSuccessHandler`:
 
-```ts
+```typescript
 import { Handler } from './Handler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
 import { RequestHandlerContext } from './RequestHandler'
 
-export class RequestSuccessHandler<T> implements Handler<RequestHandlerContext<T>> {
-  private nextHandler: Handler<RequestHandlerContext<T>> = new RequestEmptyHandler()
+export class RequestSuccessHandler implements Handler<RequestHandlerContext> {
+  private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
 
-  public async next(context: RequestHandlerContext<T>) {
-    context.state.currentState.hasSuccess = true
+  public async next(context: RequestHandlerContext) {
+    context.stateManager.state.hasSuccess = true
     await this.nextHandler.next(context)
   }
 
-  public setNext(handler: Handler<RequestHandlerContext<T>>) {
+  public setNext(handler: Handler<RequestHandlerContext>) {
     this.nextHandler = handler
   }
 }
@@ -141,100 +167,127 @@ export class RequestSuccessHandler<T> implements Handler<RequestHandlerContext<T
 
 Y la de error es `RequestErrorHandler`:
 
-```ts
+```typescript
 import { Handler } from './Handler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
 import { RequestHandlerContext } from './RequestHandler'
 
-export class RequestErrorHandler<T> implements Handler<RequestHandlerContext<T>> {
-  private nextHandler: Handler<RequestHandlerContext<T>> = new RequestEmptyHandler()
+export class RequestErrorHandler implements Handler<RequestHandlerContext> {
+  private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
 
-  public async next(context: RequestHandlerContext<T>) {
-    context.state.currentState.hasError = true
+  public async next(context: RequestHandlerContext) {
+    context.stateManager.state.hasError = true
     context.response.hasError = true
     await this.nextHandler.next(context)
   }
 
-  public setNext(handler: Handler<RequestHandlerContext<T>>) {
+  public setNext(handler: Handler<RequestHandlerContext>) {
     this.nextHandler = handler
   }
 }
 ```
 
+Aquí vemos dos `hasError`, la diferencia es que uno lo usamos en el estado de la aplicación en sí y otro lo usamos para gestionar la respuesta de la petición.
+
 Ahora nos queda la última pieza... ¿Quién orquesta todo? Pues el `RequestHandler`:
 
-```ts
-import { Handler } from './Handler'
+```typescript
 import { RequestStartHandler } from './RequestStartHandler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
-import { State } from '../State'
+import { StateManager } from '../application/state/StateManager'
 import { RequestResponseHandler } from './RequestResponseHandler'
 import { Request } from '../Request'
+import { RequestWarningHandler } from './RequestWarningHandler'
+import { Handler } from './Handler'
 
-export type RequestHandlerContext<T> = {
-  state: State
-  request: Promise<T>
-  response: Request.Payload<T>
+export type RequestHandlerContext = {
+  stateManager: StateManager
+  callback: () => Promise<unknown>
+  request: Promise<unknown> | null
+  response: Request.Payload<unknown>
 }
 
-export class RequestHandler<T> {
-  private requestStartHandler: Handler<RequestHandlerContext<T>> = new RequestStartHandler()
+export class RequestHandler {
+  private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
 
-  constructor(private readonly state: State) {
-    const requestResponseHandler: Handler<RequestHandlerContext<T>> = new RequestResponseHandler<T>()
-    const requestEmptyHandler: Handler<RequestHandlerContext<T>> = new RequestEmptyHandler<T>()
+  constructor(private readonly state: StateManager) {}
 
-    this.requestStartHandler.setNext(requestResponseHandler)
+  private setHandlers(): void {
+    const requestStartHandler = new RequestStartHandler()
+    const requestResponseHandler = new RequestResponseHandler()
+    const requestEmptyHandler = new RequestEmptyHandler()
+
+    this.nextHandler = new RequestStartHandler()
+    this.nextHandler.setNext(requestResponseHandler)
     requestResponseHandler.setNext(requestEmptyHandler)
   }
 
-  public async trigger(request: Promise<T>): Promise<Request.Success<T> | Request.Fail> {
-    const response: Request.Payload<T> = {
+  public async trigger<T>(
+    callback: () => Promise<T>
+  ): Promise<Request.Success<T> | Request.Fail> {
+    const response: Request.Payload<Response> = {
       hasError: false,
       value: null
     }
 
-    await this.requestStartHandler.next({ state: this.state, request, response })
+    this.setHandlers()
+    
+    const context: RequestHandlerContext = {
+      stateManager: this.state,
+      callback,
+      request: null,
+      response
+    }
+    
+    context.stateManager.setEmptyState()
+    await this.nextHandler.next(context)
 
     if (response.hasError) {
       return new Request.Fail()
     }
-    return new Request.Success(response.value as T)
+
+    return new Request.Success((response.value as unknown) as T)
   }
 }
 ```
 
-Aquí básicamente creamos la cadena de `Handlers`, les decimos a cada uno cual es su siguiente y exponemos a los clientes un método sobre el que pueden iniciar la cadena, que es el método `trigger`, el cual recibir una promesa, que es la petición. El `trigger` además retorna los valores.
+Aquí básicamente creamos la cadena de `Handlers`, les decimos a cada uno cual es su siguiente elemento de la cadena y exponemos a los clientes un método sobre el que pueden iniciar la cadena, que es el método `trigger`, el cual recibirá una función que retorna una promesa, que es la petición en sí. El `trigger` además retorna los valores o un error.
+
+Lo que parece un objeto `Reqeuest` realmente es un namespace de TypeScript, donde agrupo las cosas que tienen que ver con el objeto petición (`Request`):
+
+```typescript
+export namespace Request {
+  export class Success<T> {
+    constructor(public readonly value: T) {}
+  }
+
+  export class Fail extends Error {
+    constructor() {
+      super('Request failed')
+
+      if (Error.captureStackTrace) {
+        Error.captureStackTrace(this, Error)
+      }
+    }
+  }
+
+  export type Payload<T> = { hasError: boolean; value: null | T }
+}
+```
 
 ### Proxy
 
 Ahora tenemos un problema, el lector atento habrá visto que en el objeto `context` hemos empezado a cambiar un objeto `state` tal que así:
 
-```ts
+```typescript
 context.state.currentState.isLoading = false
 ```
 
 Pero claro, ¿cómo hacemos para que nuestra vista se renderice una vez el estado cambia? Porque según nuestra historia de usuario tenemos que representar varios estados del cargando.
 
-Sin cargar:
+Esto podemos hacerlo con un Proxy de JavaScript, que curiosamente implementa el patrón [Proxy](https://en.wikipedia.org/wiki/Proxy_pattern) por debajo, que será donde guardemos el estado. En este Proxy, podremos capturar todas las mutaciones de sus valores. Y teniendo esto, solamente nos hace falta conectar los componentes de nuestra aplicación con este estado, que es de la siguiente forma:
 
-![](./../imgs/frontend-patterns/light-none.png)
-
-Cargando:
-
-![](./../imgs/frontend-patterns/light-loading.png)
-
-Éxito:
-
-![](./../imgs/frontend-patterns/light-success.png)
-
-Error:
-
-![](./../imgs/frontend-patterns/light-error.png)
-
-Esto podemos hacerlo con un Proxy, que será donde guardemos el estado. En este Proxy, podremos capturar todas las mutaciones de sus valores. Y teniendo esto, solamente nos hace falta conectar los componentes de nuestra aplicación con este estado.
-
-```ts
+```typescript
 import { State } from './State'
 
 export class StateManager  {
@@ -267,7 +320,6 @@ export class StateManager  {
     this.state.isLoading = false
     this.state.hasError = false
     this.state.hasSuccess = false
-    this.state.users = []
   }
 }
 ```
@@ -276,21 +328,20 @@ Ahora cada vez que mutemos el estado del `StateManager` podremos lanzar acciones
 
 ### Observador
 
-Ahora bien, necesitamos exponer al mundo una forma de poder _observar_ estos cambios en el estado. Ahí entra el patrón obsevador. Empezamos por el sujeto:
+Ahora bien, necesitamos exponer al mundo una forma de poder _observar_ estos cambios en el estado. Ahí entra el patrón observador. Empezamos por el sujeto:
 
-```ts
+```typescript
 import { Observer } from './Observer'
 
 export interface Subject {
   register: (observer: Observer) => void
   notifyAll: () => void
-  // También podríamos dar de baja observadores
 }
 ```
 
 Y el observador:
 
-```ts
+```typescript
 export interface Observer {
   notify: () => void
 }
@@ -298,7 +349,7 @@ export interface Observer {
 
 Y si lo hilamos todo junto al `StateManager`:
 
-```ts
+```typescript
 import { Subject } from './Subject'
 import { Observer } from './Observer'
 import { State } from './State'
@@ -317,6 +368,7 @@ export class StateManager implements Subject {
         receiver: any
       ): boolean => {
         Reflect.set(target, p, value, receiver)
+        // Es aquí donde notificamos a los observadores, ya que estando en el método `set` esto quiere decir que se ha mutado una propiedad del estado 
         this.notifyAll()
         return true
       }
@@ -336,7 +388,6 @@ export class StateManager implements Subject {
     this.state.isLoading = false
     this.state.hasError = false
     this.state.hasSuccess = false
-    this.state.users = []
   }
 
   public notifyAll() {
@@ -353,27 +404,27 @@ Nos quedaría únicamente definir los observadores, pero eso lo veremos más ade
 
 ## Singleton
 
-Si pensamos el caso de uso del estado, tendría sentido dos instancias o más de `StateManager`. La respuesta es no, debería haber un único estado en la aplicación. Para evitar crear instancias de más tenemos el patrón [Singleton](https://en.wikipedia.org/wiki/Singleton_pattern). Para ello añadimos un campo a la clase llamado `instance`:
+Si pensamos el caso de uso del estado, nunca tendrían sentido dos instancias o más de `StateManager`. Para evitar crear instancias de más tenemos el patrón [Singleton](https://en.wikipedia.org/wiki/Singleton_pattern). Para ello añadimos un campo a la clase llamado `instance`:
 
-```ts
+```typescript
 class StateManager implements Subject {
     private static _instance: StateManager | null = null
 }
 ```
 
-Añadimos un getter del campo privado `_instance` dónde gestionamos su creación un única vez:
+Añadimos un getter del campo privado `_instance` dónde gestionamos su creación una única vez:
 
-```ts
+```typescript
 export class StateManager implements Subject {
     private static _instance: StateManager | null = null
 
     public static get instance() {
-    if (this._instance === null) {
-      this._instance = new StateManager()
-    }
+      if (this._instance === null) {
+        this._instance = new StateManager()
+      }
 
-    return this._instance
-  }
+      return this._instance
+    }
 }
 ```
 
@@ -381,9 +432,11 @@ Por último cambiamos la visibilidad del constructor de pública a privada, para
 
 ## React
 
-En la vista he optado por usar React. Con lo cual tendremos el componente `Light` que tendrá el siguiente contenido:
+En la vista he optado por usar React, aunque hemos hecho el código de tal forma que la lógica de la aplicación no está acoplada con ningún framework en la vista. 
 
-```tsx
+Tenemos el componente `Light` que tendrá el siguiente contenido:
+
+```typescript jsx
 import React, { Component } from 'react'
 
 export type LightStates = 'loading' | 'error' | 'success' | 'none'
@@ -403,13 +456,13 @@ export class Light extends Component<Props> {
 }
 ```
 
-Y tendremos por encima un `LightContainer`, este componente es un denominado _"contenedor"_. Los contenedores y componentes son un patrón de diseño que aplica a frameworks que se basan en componentes y la diferencia es que los contenedores son más listos que los componentes, ya que gestionan el estado y orquestan los componentes. Se empezó a usar a raíz de [este artículo de Dan Abramov](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0).
+Y tendremos por encima un `LightContainer`, este componente es un denominado _"contenedor"_. Los contenedores y componentes son un patrón de diseño que aplica a frameworks que se basan en componentes y la diferencia es que los contenedores son más listos que los componentes, ya que gestionan el estado y orquestan los componentes. Se empezó a usar en el front a raíz de [este artículo de Dan Abramov](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0).
 
 Este patrón nos recuerda mucho al patrón [Mediator](https://refactoring.guru/design-patterns/mediator) del GoF, donde un objeto es el encargado de gestionar las dependencias entre muchos objetos. En este caso el mediador será el contenedor y los componentes serán las dependencias. La forma de comunicación será basada en props y callbacks.
 
 El contenido del contenedor es el siguiente:
 
-```tsx
+```typescript jsx
 import React, { Component } from 'react'
 import { StateManager } from './state/StateManager'
 import { Observer } from './state/Observer'
@@ -466,15 +519,13 @@ export class LightContainer extends Component<Props> {
 }
 ```
 
-Aquí vemos varias partes interesantes, estamos usando el API de [Context]() de React para consumir un objeto `context` y parece que este nos provee de un `fakeRepository` que veremos más adelante. Vemos que estamos renderizando el componente `Light` y le pasamos directamente un state con `getState()` y este a su vez accede por props a un tal `stataManager`.
-
-Vamos primero con el contexto:
+Aquí vemos varias partes interesantes, estamos usando el API de [Context](https://reactjs.org/docs/context.html) de React para consumir un objeto `context` y parece que este nos provee de un `fakeRepository` que veremos más adelante. Vemos que estamos renderizando el componente `Light` y le pasamos directamente un state con `getState()` y este a su vez accede por props a un tal `stataManager`.
 
 ### Context
 
 El API de context nos va a hacer las veces de inyección de dependencias para poder cumplir uno de los principios SOLID, el de la D que es dependency inversion, que dictamina que no deberíamos depender en concreciones si no en abstracciones. ¿Cómo logramos esto? Pues resulta que `fakeUserRepository` es una interfaz y tiene la siguiente pinta:
 
-```ts
+```typescript
 import { Repository } from './Repository'
 import { FakeUser } from './FakeUser'
 
@@ -483,7 +534,7 @@ export interface FakeUserRepository extends Repository<FakeUser> {}
 
 Y `Repository` es otra interfaz del siguiente tipo:
 
-```ts
+```typescript
 export interface Repository<T> {
   findAll: () => Promise<T[]>
 }
@@ -493,7 +544,7 @@ En esta interfaz podríamos definir métodos de acceso de entidades, por ejemplo
 
 Y por tanto nos queda ver la implementación de esta interfaz:
 
-```ts
+```typescript
 import { FakeUserRepository } from './FakeUserRepository'
 import { RequestHandler } from '../requestHandlers/RequestHandler'
 import { Request } from '../Request'
@@ -501,13 +552,14 @@ import { wait } from '../utils/wait'
 import { FakeUser } from './FakeUser'
 
 export class FakeUserHttpRepository implements FakeUserRepository {
-  constructor(private readonly requestHandler: RequestHandler<FakeUser[]>) {}
+  private fakeUsers: FakeUser[] = [{ name: 'César' }, { name: 'Paco' }, { name: 'Alejandro' }]
+
+  constructor(private readonly requestHandler: RequestHandler) {}
 
   public async findAll(): Promise<FakeUser[]> {
-    const promise = this.getFakeUsers()
+    const callback = () => this.getFakeUsers()
 
-    // Y... ¡Bam! Aquí tenemos el famoso requestHandler ya en uso ;)
-    const response = await this.requestHandler.trigger(promise)
+    const response = await this.requestHandler.trigger<FakeUser[]>(callback)
 
     if (response instanceof Request.Fail) {
       throw new Error('users could not be found.')
@@ -524,7 +576,7 @@ export class FakeUserHttpRepository implements FakeUserRepository {
       throw new Error()
     }
 
-    return [{ name: 'César' }, { name: 'Paco' }, { name: 'Alejandro' }]
+    return this.fakeUsers
   }
 }
 ```
@@ -533,21 +585,32 @@ Si vemos que la lógica de muchos repositorios es idéntica, podríamos crearnos
 
 Y aquí ya empezamos a ver todo hilado, este `FakeUserHttpRepository` ya usa por debajo nuestro famoso `RequestHandler`, siendo este el que gestiona el ciclo de vida de la petición.
 
+La utilidad `wait` no es más que un setTimeout promisificado:
+
+```typescript
+export async function wait(seconds: number): Promise<void> {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve()
+    }, seconds * 1000)
+  })
+}
+```
+
 Ahora nos queda meter esto en el contexto de React, ahí entra el `rootContainer`:
 
-```ts
+```typescript
 import { createContext } from 'react'
 import { RequestHandler } from '../requestHandlers/RequestHandler'
 import { StateManager } from './state/StateManager'
 import { FakeUserRepository } from '../fakeUser/FakeUserRepository'
 import { FakeUserHttpRepository } from '../fakeUser/FakeUserHttpRepository'
-import { FakeUser } from '../fakeUser/FakeUser'
 
 export interface AppContext {
   fakeUserRepository: FakeUserRepository
 }
 
-const fakeUserRequestHandler = new RequestHandler<FakeUser[]>(StateManager.instance)
+const fakeUserRequestHandler = new RequestHandler(StateManager.instance)
 
 export const contextValue: AppContext = {
   fakeUserRepository: new FakeUserHttpRepository(fakeUserRequestHandler)
@@ -565,7 +628,7 @@ El consumidor al final le da igual de dónde vengan los datos, él quiere los us
 
 Y nos queda el punto inicial de la aplicación, el `App.tsx`:
 
-```tsx
+```typescript jsx
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 import { contextValue, Provider } from './rootContainer'
@@ -594,7 +657,7 @@ Aquí proveemos del contexto y la pasamos al stateManager el estado, que, como e
 
 En un capítulo anterior hemos desarrollado un `StateManager` que era un sujeto, pero en ningún momento hemos definido quiénes se iban a suscribir a esa parte del estado. ¿Quiénes van a ser los suscriptores? Pues los componentes de React, para ello a nuestro componente `LightContainer` le diremos que implementa la interfaz `Observer`, que cuando se monte tiene que registrarse y que implementa un método `notify` que llama el `forceUpdate` de React.
 
-```tsx
+```typescript jsx
 import React, { Component } from 'react'
 import { StateManager } from './state/StateManager'
 import { Observer } from './state/Observer'
@@ -618,7 +681,7 @@ export class LightContainer extends Component<Props> implements Observer {
 
 Quedando al completo así:
 
-```tsx
+```typescript jsx
 import React, { Component } from 'react'
 import { StateManager } from './state/StateManager'
 import { Observer } from './state/Observer'
@@ -688,9 +751,9 @@ El `forceUpdate` no hace que se renderice de nuevas todo el árbol, React sigue 
 
 Ahora veremos cuánto cuesta añadir nueva funcionalidad como nos pedía el usuario:
 
-Primero añadimos unos nuevos estados en `State`
+Primero añadimos unos nuevos estados en `State`: `hasWarning` y `userHasCanceledOperation`. La interfaz quedaría así:
 
-```ts
+```typescript
 import { FakeUser } from '../../fakeUser/FakeUser'
 
 export interface State {
@@ -698,22 +761,25 @@ export interface State {
   hasError: boolean
   hasSuccess: boolean
   hasWarning: boolean
-  userHasAcknowledgedWarning: boolean
+  userHasCanceledOperation: boolean
   users: FakeUser[]
 }
 ```
 
-Dentro del `StateManager` le damos un valor vacío y le decimos que cuando hay un estado vacío debe poner el `hasWarning` a `false`.
+Dentro del `StateManager` le damos un valor vacío y le decimos que cuando hay un estado vacío debe poner el `hasWarning` y el `userHasCanceledOperation` a `false`:
 
-```ts
+```typescript
 export class StateManager implements Subject {
+
+  ...
+  
   public getEmptyState(): State {
     return {
       isLoading: false,
       hasError: false,
       hasSuccess: false,
       hasWarning: false,
-      userHasAcknowledgedWarning: false,
+      userHasCanceledOperation: false,
       users: []
     }
   }
@@ -723,77 +789,147 @@ export class StateManager implements Subject {
     this.state.hasError = false
     this.state.hasSuccess = false
     this.state.hasWarning = false
-    this.state.userHasAcknowledgedWarning = false
-    this.state.users = []
+    this.state.userHasCanceledOperation = false
   }
 }
 ```
 
 Creamos una clase `RequestWarningHandler`:
 
-```ts
+```typescript
 import { Handler } from './Handler'
 import { RequestHandlerContext } from './RequestHandler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
-import { wait } from '../utils/wait'
-import { RequestStartHandler } from './RequestStartHandler'
+import { waitUntilOr } from '../utils/wait'
 
-export class RequestWarningHandler<T> implements Handler<RequestHandlerContext<T>> {
-  private nextHandler: Handler<RequestHandlerContext<T>> = new RequestEmptyHandler()
+export class RequestWarningHandler implements Handler<RequestHandlerContext> {
+  private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
 
-  public async next(context: RequestHandlerContext<T>) {
+  public async next(context: RequestHandlerContext) {
     context.stateManager.state.hasWarning = true
-    await wait(2.5)
-    if (context.stateManager.state.userHasAcknowledgedWarning) {
-      this.setNext(new RequestStartHandler())
+
+    await waitUntilOr(2.5, () => context.stateManager.state.userHasCanceledOperation)
+
+    if (context.stateManager.state.userHasCanceledOperation) {
+      this.setNext(new RequestEmptyHandler())
     }
 
-    await this.nextHandler.next(context)
     context.stateManager.state.hasWarning = false
+    await this.nextHandler.next(context)
   }
 
-  public setNext(handler: Handler<RequestHandlerContext<T>>) {
+  public setNext(handler: Handler<RequestHandlerContext>) {
     this.nextHandler = handler
   }
 }
 ```
 
-Si el usuario no acepta el warning en un marco de 2 segundos y medio no comenzará la petición, ya que se irá añ `RequestEmptyHandler`. Y modificamos el método `trigger` de la clase `RequestHandler`:
+Si el usuario no acepta el warning en un marco de 2 segundos y medio no comenzará la petición, ya que se irá al `RequestEmptyHandler`. Además, vemos una función `waitUntilOr` que tiene el siguiente contenid:
 
-```ts
-import { Handler } from './Handler'
+```typescript
+export async function waitUntilOr(seconds: number, value: () => boolean): Promise<void> {
+  return new Promise(resolve => {
+    let hasValueChanged = false
+    let hasTimeoutRanOut = false
+
+    window.setTimeout(() => {
+      hasTimeoutRanOut = true
+    }, seconds * 1000)
+
+    const interval = window.setInterval(() => {
+      hasValueChanged = value()
+
+      if (hasValueChanged || hasTimeoutRanOut) {
+        resolve()
+        window.clearInterval(interval)
+      }
+    }, 100)
+
+  })
+}
+```
+
+Necesitamos esta función para evitar que al cancaler el borrado de usuarios varias veces dentro del marco de 2.5 segundos se cree otro intervalo. 
+
+Modificamos el método `trigger` de la clase `RequestHandler` y refactorizamos un poco para que quede más claro las distintas rutas que se pueden tomar:
+
+```typescript
 import { RequestStartHandler } from './RequestStartHandler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
 import { StateManager } from '../application/state/StateManager'
 import { RequestResponseHandler } from './RequestResponseHandler'
 import { Request } from '../Request'
 import { RequestWarningHandler } from './RequestWarningHandler'
+import { Handler } from './Handler'
 
-export type RequestHandlerContext<T> = {
+export type RequestHandlerContext = {
   stateManager: StateManager
-  request: Promise<T>
-  response: Request.Payload<T>
+  callback: () => Promise<unknown>
+  request: Promise<unknown> | null
+  response: Request.Payload<unknown>
 }
 
-export class RequestHandler<T> {
-  ...
+export class RequestHandler {
+  private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
 
-  public async trigger(request: Promise<T>, hasWarning: boolean = false): Promise<Request.Success<T> | Request.Fail> {
-    const response: Request.Payload<T> = {
+  constructor(private readonly state: StateManager) {}
+
+  public async trigger<T>(
+    callback: () => Promise<T>,
+    hasWarning: boolean = false
+  ): Promise<Request.Success<T> | Request.Fail> {
+    const response: Request.Payload<Response> = {
       hasError: false,
       value: null
     }
 
-    if (hasWarning) {
-      this.requestStartHandler.setNext(new RequestWarningHandler())
+    this.nextHandler = this.getHandlers(hasWarning)
+    const context: RequestHandlerContext = {
+      stateManager: this.state,
+      callback,
+      request: null,
+      response
     }
 
-    await this.requestStartHandler.next({ stateManager: this.state, request, response })
+    context.stateManager.setEmptyState()
+    await this.nextHandler.next(context)
 
     if (response.hasError) {
       return new Request.Fail()
     }
-    return new Request.Success(response.value as T)
+
+    return new Request.Success((response.value as unknown) as T)
+  }
+
+  private getHandlers(hasWarning: boolean): Handler<RequestHandlerContext> {
+    if (hasWarning) {
+      return this.getWarningHandlers()
+    }
+
+    return this.getDefaultHandlers()
+  }
+
+  private getWarningHandlers(): Handler<RequestHandlerContext> {
+    const requestStartHandler = new RequestStartHandler()
+    const requestResponseHandler = new RequestResponseHandler()
+    const requestEmptyHandler = new RequestEmptyHandler()
+
+    const handler = new RequestWarningHandler()
+    handler.setNext(requestStartHandler)
+    requestStartHandler.setNext(requestResponseHandler)
+    requestResponseHandler.setNext(requestEmptyHandler)
+
+    return handler
+  }
+
+  private getDefaultHandlers(): Handler<RequestHandlerContext> {
+    const requestResponseHandler = new RequestResponseHandler()
+    const requestEmptyHandler = new RequestEmptyHandler()
+
+    const handler = new RequestStartHandler()
+    handler.setNext(requestResponseHandler)
+    requestResponseHandler.setNext(requestEmptyHandler)
+    return handler
   }
 }
 ```
