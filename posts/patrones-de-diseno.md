@@ -492,7 +492,7 @@ export class StateManager implements Subject {
 
 ## React
 
-En la vista he optado por usar React, aunque hemos hecho el código de tal forma que la lógica de la aplicación no está acoplada con ningún framework en la vista. 
+Para la aplicación he optado por usar React, aunque hemos hecho el código de tal forma que la lógica de la aplicación no está acoplada con ningún framework. 
 
 Tenemos el componente `Light` que tendrá el siguiente contenido:
 
@@ -577,13 +577,70 @@ export class LightContainer extends Component<Props> {
     )
   }
 }
+
+import React, { Component } from 'react'
+import { StateManager } from './state/StateManager'
+import { Observer } from './state/Observer'
+import { Light, LightStates } from './Light'
+import { Consumer } from './rootContainer'
+
+interface Props {
+  stateManager: StateManager
+}
+
+export class LightContainer extends Component<Props> {
+  private getState = (): LightStates => {
+    if (this.props.stateManager.state.isLoading) {
+      return 'loading'
+    }
+
+    if (this.props.stateManager.state.hasError) {
+      return 'error'
+    }
+
+    if (this.props.stateManager.state.hasSuccess) {
+      return 'success'
+    }
+
+    return 'none'
+  }
+
+  public render(): React.ReactNode {
+    const { state } = this.props.stateManager
+
+    return (
+      <Consumer>
+        {context => (
+          <div className="light-controller">
+            <Light state={this.getState()} />
+            <button
+              disabled={state.isLoading}
+              className={`button ${state.isLoading ? 'button--disabled' : ''}`}
+              onClick={async () => {
+                state.users = await context.fakeUserRepository.findAll()
+              }}
+            >
+              Get users
+            </button>
+
+
+            <h3>Users</h3>
+            {state.users.map(user => (
+              <p key={user.name}>{user.name}</p>
+            ))}
+          </div>
+        )}
+      </Consumer>
+    )
+  }
+}
 ```
 
 Aquí vemos varias partes interesantes, estamos usando el API de [Context](https://reactjs.org/docs/context.html) de React para consumir un objeto `context` y parece que este nos provee de un `fakeRepository` que veremos más adelante. Vemos que estamos renderizando el componente `Light` y le pasamos directamente un state con `getState()` y este a su vez accede por props a un tal `stataManager`.
 
 ### Context
 
-El API de context nos va a hacer las veces de inyección de dependencias para poder cumplir uno de los principios SOLID, el de la D que es dependency inversion, que dictamina que no deberíamos depender en concreciones si no en abstracciones. ¿Cómo logramos esto? Pues resulta que `fakeUserRepository` es una interfaz y tiene la siguiente pinta:
+El API de context nos va a hacer las veces de inyección de dependencias para poder cumplir uno de los principios SOLID, el de la D que es [dependency inversion](https://en.wikipedia.org/wiki/Dependency_inversion_principle), que dictamina que no deberíamos depender en concreciones si no en abstracciones. ¿Cómo logramos esto? Pues resulta que `fakeUserRepository` es una interfaz y tiene la siguiente pinta:
 
 ```typescript
 import { Repository } from './Repository'
@@ -633,7 +690,7 @@ export class FakeUserHttpRepository implements FakeUserRepository {
     const hasError = Math.random() >= 0.5
 
     if (hasError) {
-      throw new Error()
+      throw new Request.Fail()
     }
 
     return this.fakeUsers
@@ -650,7 +707,7 @@ La utilidad `wait` no es más que un setTimeout promisificado:
 ```typescript
 export async function wait(seconds: number): Promise<void> {
   return new Promise(resolve => {
-    setTimeout(() => {
+    window.setTimeout(() => {
       resolve()
     }, seconds * 1000)
   })
@@ -686,7 +743,7 @@ Pasamos de una abstracción a una concreción, y esto es muy potente, porque ima
 
 El consumidor al final le da igual de dónde vengan los datos, él quiere los usuarios, ya será en otro sitio de dónde tiene que sacarlos. Además, si el día de mañana quisiésemos migrar a [GraphQL](https://graphql.org/) lo único que tendríamos que hacer sería añadir otro repositorio, cumpliendo así otro de los principios de SOLID, el de la O, que es Open/Closed, lo que quiere decir que si añadimos funcionalidad no tenemos que tocar código antiguo si no añadir más código.
 
-Y nos queda el punto inicial de la aplicación, el `App.tsx`:
+Y nos queda el punto inicial de la aplicación, el `Aplication.tsx`:
 
 ```typescript jsx
 import React, { Component } from 'react'
@@ -757,7 +814,7 @@ export class LightContainer extends Component<Props> implements Observer {
     this.props.stateManager.register(this)
   }
 
-  public getState(): LightStates {
+  private getState = (): LightStates => {
     if (this.props.stateManager.state.isLoading) {
       return 'loading'
     }
@@ -774,23 +831,25 @@ export class LightContainer extends Component<Props> implements Observer {
   }
 
   public render(): React.ReactNode {
+    const { state } = this.props.stateManager
+
     return (
       <Consumer>
         {context => (
           <div className="light-controller">
             <Light state={this.getState()} />
             <button
-              disabled={this.props.stateManager.state.isLoading}
-              className={`button ${this.props.stateManager.state.isLoading ? 'button--disabled' : ''}`}
+              disabled={state.isLoading}
+              className={`button ${state.isLoading ? 'button--disabled' : ''}`}
               onClick={async () => {
-                this.props.stateManager.state.users = []
-                this.props.stateManager.state.users = await context.fakeUserRepository.findAll()
+                state.users = await context.fakeUserRepository.findAll()
               }}
             >
               Get users
             </button>
+
             <h3>Users</h3>
-            {this.props.stateManager.state.users.map(user => (
+            {state.users.map(user => (
               <p key={user.name}>{user.name}</p>
             ))}
           </div>
