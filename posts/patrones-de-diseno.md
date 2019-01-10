@@ -1280,6 +1280,6 @@ export class LightContainer extends Component<Props, State> implements Observer 
 
 Hemos visto un montón de patrones (Singleton, Observador, Chain of responsibility, Proxy, Mediator), junto con separación de capas con repositorios, estado y componentes. Hemos comprobado que si nuestro código cumple SOLID será más fácil lidiar con el, más mantenible y aceptará mejor el cambio.
 
-El código pobrás verlo en mi Github: [https://github.com/cesalberca/frontend-patterns](https://github.com/cesalberca/frontend-patterns).
+El código podrás verlo en mi Github: [https://github.com/cesalberca/frontend-patterns](https://github.com/cesalberca/frontend-patterns).
 
 ¡No olvides seguirme en [Twitter](https://twitter.com/)!
