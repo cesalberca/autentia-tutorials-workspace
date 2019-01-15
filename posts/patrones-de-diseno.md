@@ -166,7 +166,7 @@ Aquí vemos varias cosas, dentro de este `Handler` tenemos un `RequestErrorHandl
 Cómo todos los `Handler`s implementan la misma interfaz aquí vemos la magia del [polimorfismo](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)
 , donde a esta clase poco le importa cuál sea el siguiente `Handler`, este se preocupa de elegir el camino correcto, ya serán el resto de `Handlers` quienes determinen qué tienen que hacer (esto hace que sigamos la S de [SOLID](https://en.wikipedia.org/wiki/SOLID) – Single responsibility principle).
 
-Y además vemos algo muy interesante, en el `finally` decimos que `context.state.currentState.isLoading` se ponga a `false`. Pero si vemos un poco más arriba, hacemos `await` de la llamada al siguiente handler, lo que quiere decir esto que estamos __mutando el estado una vez se ha ejecuta el siguiente handler__. Esto nos puede venir de perlas si no quisiésemos parar la ejecución del programa o si quisiésemos ejecutar algo a posteriori a modo de "limpieza". En este caso una vez resuelto la petición con éxito o con error, queremos que se cambie el estado a cargado y no antes.
+Y además vemos algo muy interesante, en el `finally` decimos que `context.state.currentState.isLoading` se ponga a `false`. Pero si vemos un poco más arriba, hacemos `await` de la llamada al siguiente handler, lo que quiere decir esto que estamos __mutando el estado una vez se ha ejecuta el siguiente handler__. Esto nos puede venir de perlas si no quisiéramos parar la ejecución del programa o si quisiéramos ejecutar algo a posteriori a modo de "limpieza". En este caso una vez resuelto la petición con éxito o con error, queremos que se cambie el estado a cargado y no antes.
 
 La clase de éxito de la petición es `RequestSuccessHandler`:
 
@@ -273,7 +273,7 @@ export class RequestHandler {
 }
 ```
 
-Aquí básicamente creamos la cadena de `Handlers`, les decimos a cada uno cual es su siguiente elemento de la cadena y exponemos a los clientes un método sobre el que pueden iniciar la cadena, que es el método `trigger`, el cual recibirá una función que retorna una promesa, que es la petición en sí. El `trigger` además retorna los valores o un error.
+Aquí básicamente creamos la cadena de `Handlers`, les decimos a cada uno cuál es su siguiente elemento de la cadena y exponemos a los clientes un método sobre el que pueden iniciar la cadena, que es el método `trigger`, el cual recibirá una función que retorna una promesa, que es la petición en sí. El `trigger` además retorna los valores o un error.
 
 Lo que parece un objeto `Request` realmente es un namespace de TypeScript, donde agrupo las cosas que tienen que ver con el objeto petición (`Request`):
 
@@ -599,7 +599,7 @@ export class LightContainer extends Component<Props> {
               disabled={this.props.stateManager.state.isLoading}
               className={`button ${this.props.stateManager.state.isLoading ? 'button--disabled' : ''}`}
               onClick={async () => {
-                // Si quisiésemos ir más allá delegaríamos esta funcionalidad en un servicio o en un use case, de momento nos vale aquí
+                // Si quisiéramos ir más allá delegaríamos esta funcionalidad en un servicio o en un use case, de momento nos vale aquí
                 this.props.stateManager.state.users = []
                 this.props.stateManager.state.users = await context.fakeUserRepository.findAll()
               }}
@@ -780,7 +780,7 @@ export const Consumer = Context.Consumer
 
 Pasamos de una abstracción a una concreción, y esto es muy potente, porque imaginemos que queremos implementar un sistema de caché en local storage, lo único que tendríamos que crear es un repositorio `FakeUserLocalStorageRepository` y dinámicamente cambiar la implementación entre el `FakeUserHttpRepository` y el anterior, siendo completamente transparente para el consumidor.
 
-El consumidor al final le da igual de dónde vengan los datos, él quiere los usuarios, ya será en otro sitio de dónde tiene que sacarlos. Además, si el día de mañana quisiésemos migrar a [GraphQL](https://graphql.org/) lo único que tendríamos que hacer sería añadir otro repositorio, cumpliendo así otro de los principios de SOLID, el de la O, que es Open/Closed, lo que quiere decir que si añadimos funcionalidad no tenemos que tocar código antiguo si no añadir más código.
+El consumidor al final le da igual de dónde vengan los datos, él quiere los usuarios, ya será en otro sitio de dónde tiene que sacarlos. Además, si el día de mañana quisiéramos migrar a [GraphQL](https://graphql.org/) lo único que tendríamos que hacer sería añadir otro repositorio, cumpliendo así otro de los principios de SOLID, el de la O, que es Open/Closed, lo que quiere decir que si añadimos funcionalidad no tenemos que tocar código antiguo si no añadir más código.
 
 Y nos queda el punto inicial de la aplicación, el `Aplication.tsx`:
 
@@ -1045,7 +1045,7 @@ export async function waitUntilOr(seconds: number, value: () => boolean): Promis
 }
 ```
 
-Necesitamos esta función para evitar que al cancaler el borrado de usuarios varias veces dentro del marco de 2.5 segundos se cree otro intervalo. 
+Necesitamos esta función para evitar que al cancelar el borrado de usuarios varias veces dentro del marco de 2.5 segundos se cree otro intervalo. 
 
 Modificamos el método `trigger` de la clase `RequestHandler` y refactorizamos un poco para que quede más claro las distintas rutas que se pueden tomar:
 
@@ -1130,7 +1130,7 @@ export class RequestHandler {
 }
 ```
 
-Añadir al repositorio génerico `Repository` el método de `deleteAll`:
+Añadir al repositorio genérico `Repository` el método de `deleteAll`:
 
 ```typescript
 export interface Repository<T> {
