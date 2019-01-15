@@ -67,6 +67,10 @@ function configMarked() {
     )}</code></pre>`;
   };
 
+  myRenderer.codespan = code => {
+    return `<strong>${code}</strong>`;
+  };
+
   myRenderer.image = (href, title, text) => {
     let out = `<img `;
 

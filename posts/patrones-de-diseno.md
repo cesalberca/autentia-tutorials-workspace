@@ -1,6 +1,29 @@
-#
-
 El mundo frontend es conocido por su gran _volatilidad_, sin embargo poco hacemos para que esta volatilidad no afecte a nuestros desarrollos. Nos importa últimamente estar más __a la última del framework del momento que de aprender a hacer nuestro código más mantenible__. Así que este tutorial irá en pos de hacer una aplicación lo más _"Frameworkless"_ posible.
+
+<!-- more -->
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Índice
+
+- [Problema](#problema)
+- [Solución](#soluci%C3%B3n)
+  - [Chain of responsibility](#chain-of-responsibility)
+  - [Proxy](#proxy)
+  - [Observador](#observador)
+- [Singleton](#singleton)
+- [React](#react)
+  - [Context](#context)
+  - [Observadores](#observadores)
+- [Nueva feature](#nueva-feature)
+- [Conclusión](#conclusi%C3%B3n)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+
+El código podrás verlo en mi Github: [https://github.com/cesalberca/frontend-patterns](https://github.com/cesalberca/frontend-patterns).
+
+¡No olvides seguirme en [Twitter](https://twitter.com/)!
 
 ## Problema
 
@@ -22,7 +45,7 @@ Y si no, una luz en rojo.
 
 Si se vuelve a peticionar algo se volverá a mostrar la luz azul.
 
-El usuario prevé que querrá añadir algún aviso sobre algunas peticiones que sean destructivas, como el borrado de una entidad, y además querría mostrar la luz en ambar.
+El usuario prevé que querrá añadir algún aviso sobre algunas peticiones que sean destructivas, como el borrado de una entidad, y además querría notificar al usuario de éstas de alguna forma.
 
 Por supuesto nuestro usuario necesita que _todas_ las peticiones por defecto se comporten así, pudiendo en alguno lugares añadir gestiones más especiales para capturar errores más específicos.
 
@@ -30,7 +53,7 @@ Además es necesario recuperar los datos de la petición.
 
 ## Solución
 
-La solución que he ideado parte de un enfoque más simple, sobre el que he ido iterando para poder extender fácilmente mi código para adaptarme a nuevas historias de usuario. Para ello he usado una serie de patrones de diseño que me ayudaran a gestionar de mejor forma el código. Usaremos [TypeScript]() y [React]().
+La solución que he ideado parte de un enfoque más simple, sobre el que he ido iterando para poder extender fácilmente mi código para adaptarme a nuevas historias de usuario. Para ello he usado una serie de patrones de diseño que me ayudaran a gestionar de mejor forma el código. Usaremos [TypeScript](https://www.typescriptlang.org/) y [React](https://reactjs.org/).
 
 ### Chain of responsibility
 
@@ -140,7 +163,8 @@ export class RequestResponseHandler implements Handler<RequestHandlerContext> {
 
 Aquí vemos varias cosas, dentro de este `Handler` tenemos un `RequestErrorHandler` y un `RequestSuccessHandler`, y es en el `next` donde se determina qué camino ha de seguir la cadena. Una vez se ha decidido dicho camino se invoca al método `next`.
 
-Cómo todos los `Handler`s implementan la misma interfaz aquí vemos la magia del [polimorfismo](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)), donde a esta clase poco le importa cuál sea el siguiente `Handler`, este se preocupa de elegir el camino correcto, ya serán el resto de `Handlers` quienes determinen qué tienen que hacer (esto hace que sigamos la S de [SOLID](https://en.wikipedia.org/wiki/SOLID))(Single responsibility principle).
+Cómo todos los `Handler`s implementan la misma interfaz aquí vemos la magia del [polimorfismo](https://en.wikipedia.org/wiki/Polymorphism_(computer_science)
+, donde a esta clase poco le importa cuál sea el siguiente `Handler`, este se preocupa de elegir el camino correcto, ya serán el resto de `Handlers` quienes determinen qué tienen que hacer (esto hace que sigamos la S de [SOLID](https://en.wikipedia.org/wiki/SOLID) – Single responsibility principle).
 
 Y además vemos algo muy interesante, en el `finally` decimos que `context.state.currentState.isLoading` se ponga a `false`. Pero si vemos un poco más arriba, hacemos `await` de la llamada al siguiente handler, lo que quiere decir esto que estamos __mutando el estado una vez se ha ejecuta el siguiente handler__. Esto nos puede venir de perlas si no quisiésemos parar la ejecución del programa o si quisiésemos ejecutar algo a posteriori a modo de "limpieza". En este caso una vez resuelto la petición con éxito o con error, queremos que se cambie el estado a cargado y no antes.
 
@@ -283,7 +307,7 @@ context.state.currentState.isLoading = false
 
 Esto es parte de la solución que se da al problema de recargar en la vista cuando un valor cambiar. Porque según nuestra historia de usuario tenemos que representar varios estados del cargando de forma dinámica.
 
-Esto podemos hacerlo con un [Proxy de JavaScript](), que curiosamente implementa el patrón [Proxy](https://en.wikipedia.org/wiki/Proxy_pattern) por debajo, que será donde guardemos el estado. En este Proxy, podremos capturar todas las mutaciones de sus valores. Y teniendo esto, solamente nos hace falta conectar los componentes de nuestra aplicación con este estado, que es de la siguiente forma:
+Esto podemos hacerlo con un [Proxy de JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy), que curiosamente implementa el patrón [Proxy](https://en.wikipedia.org/wiki/Proxy_pattern) por debajo, que será donde guardemos el estado. En este Proxy, podremos capturar todas las mutaciones de sus valores. Y teniendo esto, solamente nos hace falta conectar los componentes de nuestra aplicación con este estado, que es de la siguiente forma:
 
 ```typescript
 import { State } from './State'
@@ -511,7 +535,7 @@ Para la aplicación he optado por usar React, aunque hemos hecho el código de t
 
 Tenemos el componente `Light` que tendrá el siguiente contenido:
 
-```typescript jsx
+```tsx
 import React, { Component } from 'react'
 
 export type LightStates = 'loading' | 'error' | 'success' | 'none'
@@ -537,7 +561,7 @@ Este patrón nos recuerda mucho al patrón [Mediator](https://refactoring.guru/d
 
 El contenido del contenedor es el siguiente:
 
-```typescript jsx
+```tsx
 import React, { Component } from 'react'
 import { StateManager } from './state/StateManager'
 import { Observer } from './state/Observer'
@@ -760,7 +784,7 @@ El consumidor al final le da igual de dónde vengan los datos, él quiere los us
 
 Y nos queda el punto inicial de la aplicación, el `Aplication.tsx`:
 
-```typescript jsx
+```tsx
 import React, { Component } from 'react'
 import ReactDOM from 'react-dom'
 import { contextValue, Provider } from './rootContainer'
@@ -789,7 +813,7 @@ Aquí proveemos del contexto y la pasamos al stateManager el estado, que, como e
 
 En un capítulo anterior hemos desarrollado un `StateManager` que era un sujeto, pero en ningún momento hemos definido quiénes se iban a suscribir a esa parte del estado. ¿Quiénes van a ser los suscriptores? Pues los componentes de React, para ello a nuestro componente `LightContainer` le diremos que implementa la interfaz `Observer`, que cuando se monte tiene que registrarse y que implementa un método `notify` que llama el `forceUpdate` de React.
 
-```typescript jsx
+```tsx
 import React, { Component } from 'react'
 import { StateManager } from './state/StateManager'
 import { Observer } from './state/Observer'
@@ -813,7 +837,7 @@ export class LightContainer extends Component<Props> implements Observer {
 
 Quedando al completo así:
 
-```typescript jsx
+```tsx
 import React, { Component } from 'react'
 import { StateManager } from './state/StateManager'
 import { Observer } from './state/Observer'
@@ -1167,7 +1191,7 @@ export class FakeUserHttpRepository implements FakeUserRepository {
 
 Por último, añadimos al contenedor el botón. Ahora nuestro contenedor tendrá un estado interno que nos dirá si se debe mostrar un warning:
 
-```typescript jsx
+```tsx
 import React, { Component } from 'react'
 import { StateManager } from './state/StateManager'
 import { Observer } from './state/Observer'
