@@ -27,19 +27,19 @@ El código podrás verlo en mi Github: [https://github.com/cesalberca/frontend-p
 
 ## Problema
 
-Nuestro usuario tiene el siguiente problema: dado que su aplicación Web es altamente interactiva y hace uso de técnicas como carga de datos en diferido es necesario mostrar al usuario de los distintos estados de la aplicación.
+Nuestro usuario tiene el siguiente problema: dado que su aplicación Web es altamente interactiva y hace uso de técnicas como carga de datos en diferido es necesario mostrar al usuario los distintos estados de la aplicación.
 
 Inicialmente, al no haber cargado nada se mostrará una luz en gris: ![Sin cargar](./../imgs/frontend-patterns/light-none.png)
 
-En el momento en que comienza una petición se mostrará una luz en azul:
+En el momento en que comienza una petición se mostrará una luz en azul y se bloqueará el botón:
 
 ![Cargando](./../imgs/frontend-patterns/light-loading.png)
  
-Si la petición actual ha ido bien mostrar una luz en verde:
+Si la petición actual ha ido bien mostrar una luz en verde, los usuarios resueltos y desbloquear el botón:
  
 ![Éxito](./../imgs/frontend-patterns/light-success.png)
 
-Y si no, una luz en rojo.
+Y si no, una luz en rojo y desbloquear el botón:
 
 ![Error](./../imgs/frontend-patterns/light-error.png)
 
@@ -49,17 +49,15 @@ El usuario prevé que querrá añadir algún aviso sobre algunas peticiones que 
 
 Por supuesto nuestro usuario necesita que _todas_ las peticiones por defecto se comporten así, pudiendo en alguno lugares añadir gestiones más especiales para capturar errores más específicos.
 
-Además es necesario recuperar los datos de la petición.
-
 ## Solución
 
-La solución que he ideado parte de un enfoque más simple, sobre el que he ido iterando para poder extender fácilmente mi código para adaptarme a nuevas historias de usuario. Para ello he usado una serie de patrones de diseño que me ayudaran a gestionar de mejor forma el código. Usaremos [TypeScript](https://www.typescriptlang.org/) y [React](https://reactjs.org/).
+La solución que he ideado parte de un enfoque más simple, sobre el que he ido iterando para poder extender fácilmente mi código para adaptarme a nuevas funcionalidades. Para ello he usado una serie de patrones de diseño que me ayudaran a gestionar de mejor forma el código. Usaremos [TypeScript](https://www.typescriptlang.org/) y [React](https://reactjs.org/).
 
 ### Chain of responsibility
 
 Le gestión de una petición asíncrona tiene que ir pasando por una serie de estados: __inicio de la petición__, __respuesta de la petición__ que a su vez se divide en: __petición resuelta con éxito__ y __petición fallida__. Y además, este ciclo es lineal. Incluso se podría decir que es una _cadena_.
 
-Para este tipo de gestiones existe un patrón de diseño llamado [chain of responsability](https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern) que lo que pretende es gestionar el procesamiento de objetos siendo cada objeto el que tenga la lógica de procesado. Es decir, este patrón nos puede ahorrar un montón de `if` y `else`s y haciendo cumplir el principio de [Open/Closed](https://codeburst.io/understanding-solid-principles-open-closed-principle-e2b588b6491f) de [SOLID](https://scotch.io/bar-talk/s-o-l-i-d-the-first-five-principles-of-object-oriented-design) (abierto a la extensión, cerrado a la modificación) como veremos más adelante.
+Para este tipo de estructuras existe un patrón de diseño llamado [chain of responsability](https://en.wikipedia.org/wiki/Chain-of-responsibility_pattern) que lo que pretende es gestionar el procesamiento de objetos siendo cada objeto el que tenga la lógica de procesado. Es decir, este patrón nos puede ahorrar un montón de `if` y `else`s haciendo cumplir el principio de [Open/Closed](https://codeburst.io/understanding-solid-principles-open-closed-principle-e2b588b6491f) de [SOLID](https://scotch.io/bar-talk/s-o-l-i-d-the-first-five-principles-of-object-oriented-design) (abierto a la extensión, cerrado a la modificación) como veremos más adelante.
 
 ¡Así que vamos a ello! Vamos a empezar por la interfaz `Handler`:
 
@@ -83,7 +81,7 @@ Ahora bien, ¿cómo sería la implementación de un `Handler`? Pues sería algo 
 ```typescript
 import { Handler } from './Handler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
-import { RequestHandlerContext } from './RequestHandler'
+import { RequestHandlerContext } from './RequestHandlerContext'
 
 export class RequestStartHandler implements Handler<RequestHandlerContext> {
   // Aquí debemos definir el super tipo de RequestEmptyHandler que es Handler<RequestHandlerContext>
@@ -110,11 +108,24 @@ En el método `next` tendremos la gestión del comienzo de una petición, dado q
 * Invocar la función que hará la petición (es una callback para conseguir una evaluación `lazy`)
 * Invocar al siguiente elemento de la cadena
 
+El `RequestHandlerContext` es una interfaz con lo siguiente:
+
+```typescript
+export interface RequestHandlerContext {
+  stateManager: StateManager
+  callback: () => Promise<unknown>
+  request: Promise<unknown> | null
+  response: Request.Payload<unknown>
+}
+```
+
+Es aquí donde definimos lo que tendrá el objeto `context`.
+
 También vemos que se da un valor por defecto al `nextHandler` que es el `RequestEmptyHandler`. Este handler vacío lo que hace es... nada. Este es el handler por si en algún momento se intenta llamar al `next` del último handler. ¿Su implementación? Muy sencilla:
 
 ```typescript
 import { Handler } from './Handler'
-import { RequestHandlerContext } from './RequestHandler'
+import { RequestHandlerContext } from './RequestHandlerContext'
 
 export class RequestEmptyHandler implements Handler<RequestHandlerContext> {
   public async next() {}
@@ -130,7 +141,7 @@ import { Handler } from './Handler'
 import { RequestErrorHandler } from './RequestErrorHandler'
 import { RequestSuccessHandler } from './RequestSuccessHandler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
-import { RequestHandlerContext } from './RequestHandler'
+import { RequestHandlerContext } from './RequestHandlerContext'
 
 export class RequestResponseHandler implements Handler<RequestHandlerContext> {
   private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
@@ -173,7 +184,7 @@ La clase de éxito de la petición es `RequestSuccessHandler`:
 ```typescript
 import { Handler } from './Handler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
-import { RequestHandlerContext } from './RequestHandler'
+import { RequestHandlerContext } from './RequestHandlerContext'
 
 export class RequestSuccessHandler implements Handler<RequestHandlerContext> {
   private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
@@ -194,7 +205,7 @@ Y la de error es `RequestErrorHandler`:
 ```typescript
 import { Handler } from './Handler'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
-import { RequestHandlerContext } from './RequestHandler'
+import { RequestHandlerContext } from './RequestHandlerContext'
 
 export class RequestErrorHandler implements Handler<RequestHandlerContext> {
   private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
@@ -222,13 +233,7 @@ import { StateManager } from '../application/state/StateManager'
 import { RequestResponseHandler } from './RequestResponseHandler'
 import { Request } from '../Request'
 import { Handler } from './Handler'
-
-export type RequestHandlerContext = {
-  stateManager: StateManager
-  callback: () => Promise<unknown>
-  request: Promise<unknown> | null
-  response: Request.Payload<unknown>
-}
+import { RequestHandlerContext } from './RequestHandlerContext'
 
 export class RequestHandler {
   private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
@@ -305,7 +310,7 @@ Ahora tenemos un problema, el lector atento habrá visto que en el objeto `conte
 context.state.currentState.isLoading = false
 ```
 
-Esto es parte de la solución que se da al problema de recargar en la vista cuando un valor cambiar. Porque según nuestra historia de usuario tenemos que representar varios estados del cargando de forma dinámica.
+Esto es parte de la solución que implementaremos ante el problema de recargar la vista cuando un valor cambia. Porque según nuestra historia de usuario tenemos que representar varios estados del cargando de forma dinámica.
 
 Esto podemos hacerlo con un [Proxy de JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy), que curiosamente implementa el patrón [Proxy](https://en.wikipedia.org/wiki/Proxy_pattern) por debajo, que será donde guardemos el estado. En este Proxy, podremos capturar todas las mutaciones de sus valores. Y teniendo esto, solamente nos hace falta conectar los componentes de nuestra aplicación con este estado, que es de la siguiente forma:
 
@@ -361,6 +366,8 @@ export interface Subject {
 }
 ```
 
+El sujeto es aquella entidad que será observada. Tendrá un array de observadores y un método que permitirá registrar un nuevo observador y otro método para notificar a todos los observadores de que algo ha cambiado.
+
 Y el observador:
 
 ```typescript
@@ -368,6 +375,8 @@ export interface Observer {
   notify: () => void
 }
 ```
+
+El observador será notificado mediante el método `notify`.
 
 Y si lo hilamos todo junto al `StateManager`:
 
@@ -557,7 +566,7 @@ export class Light extends Component<Props> {
 
 Y tendremos por encima un `LightContainer`, este componente es un denominado _"contenedor"_. Los contenedores y componentes son un patrón de diseño que aplica a frameworks que se basan en componentes y la diferencia es que los contenedores son más listos que los componentes, ya que gestionan el estado y orquestan los componentes. Se empezó a usar en el front a raíz de [este artículo de Dan Abramov](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0).
 
-Este patrón nos recuerda mucho al patrón [Mediator](https://refactoring.guru/design-patterns/mediator) del GoF, donde un objeto es el encargado de gestionar las dependencias entre muchos objetos. En este caso el mediador será el contenedor y los componentes serán las dependencias. La forma de comunicación será basada en props y callbacks.
+Este patrón nos recuerda mucho al patrón [Mediator](https://refactoring.guru/design-patterns/mediator) del [GoF](https://en.wikipedia.org/wiki/Design_Patterns), donde un objeto es el encargado de gestionar las dependencias entre muchos objetos. En este caso el mediador será el contenedor y los componentes serán las dependencias. La forma de comunicación será basada en props y callbacks.
 
 El contenido del contenedor es el siguiente:
 
@@ -616,66 +625,9 @@ export class LightContainer extends Component<Props> {
     )
   }
 }
-
-import React, { Component } from 'react'
-import { StateManager } from './state/StateManager'
-import { Observer } from './state/Observer'
-import { Light, LightStates } from './Light'
-import { Consumer } from './rootContainer'
-
-interface Props {
-  stateManager: StateManager
-}
-
-export class LightContainer extends Component<Props> {
-  private getState = (): LightStates => {
-    if (this.props.stateManager.state.isLoading) {
-      return 'loading'
-    }
-
-    if (this.props.stateManager.state.hasError) {
-      return 'error'
-    }
-
-    if (this.props.stateManager.state.hasSuccess) {
-      return 'success'
-    }
-
-    return 'none'
-  }
-
-  public render(): React.ReactNode {
-    const { state } = this.props.stateManager
-
-    return (
-      <Consumer>
-        {context => (
-          <div className="light-controller">
-            <Light state={this.getState()} />
-            <button
-              disabled={state.isLoading}
-              className={`button ${state.isLoading ? 'button--disabled' : ''}`}
-              onClick={async () => {
-                state.users = await context.fakeUserRepository.findAll()
-              }}
-            >
-              Get users
-            </button>
-
-
-            <h3>Users</h3>
-            {state.users.map(user => (
-              <p key={user.name}>{user.name}</p>
-            ))}
-          </div>
-        )}
-      </Consumer>
-    )
-  }
-}
 ```
 
-Aquí vemos varias partes interesantes, estamos usando el API de [Context](https://reactjs.org/docs/context.html) de React para consumir un objeto `context` y parece que este nos provee de un `fakeRepository` que veremos más adelante. Vemos que estamos renderizando el componente `Light` y le pasamos directamente un state con `getState()` y este a su vez accede por props a un tal `stataManager`.
+Aquí vemos varias partes interesantes, estamos usando el API de [Context](https://reactjs.org/docs/context.html) de React para consumir un objeto `context` y parece que este nos provee de un `fakeRepository` que veremos más adelante. Vemos que estamos renderizando el componente `Light` y le pasamos directamente un state con `getState()` y este a su vez accede por props a un tal `stateManager`.
 
 ### Context
 
@@ -903,7 +855,7 @@ export class LightContainer extends Component<Props> implements Observer {
 }
 ```
 
-El `forceUpdate` no hace que se renderice de nuevas todo el árbol, React sigue aplicando el diffing para renderizar solamente aquello que ha cambiado.
+El `forceUpdate` no hace que se renderice de nuevo todo el árbol, React sigue aplicando el diffing para renderizar solamente aquello que ha cambiado.
 
 ## Nueva feature
 
@@ -994,7 +946,7 @@ Creamos una clase `RequestWarningHandler`:
 
 ```typescript
 import { Handler } from './Handler'
-import { RequestHandlerContext } from './RequestHandler'
+import { RequestHandlerContext } from './RequestHandlerContext'
 import { RequestEmptyHandler } from './RequestEmptyHandler'
 import { waitUntilOr } from '../utils/wait'
 
@@ -1056,14 +1008,8 @@ import { StateManager } from '../application/state/StateManager'
 import { RequestResponseHandler } from './RequestResponseHandler'
 import { Request } from '../Request'
 import { RequestWarningHandler } from './RequestWarningHandler'
+import { RequestHandlerContext} from './RequestHandlerContext'
 import { Handler } from './Handler'
-
-export type RequestHandlerContext = {
-  stateManager: StateManager
-  callback: () => Promise<unknown>
-  request: Promise<unknown> | null
-  response: Request.Payload<unknown>
-}
 
 export class RequestHandler {
   private nextHandler: Handler<RequestHandlerContext> = new RequestEmptyHandler()
