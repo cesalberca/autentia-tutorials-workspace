@@ -304,10 +304,10 @@ export namespace Request {
 
 ### Proxy
 
-Ahora tenemos un problema, el lector atento habrá visto que en el objeto `context` hemos empezado a cambiar un objeto `state` tal que así:
+Ahora tenemos un problema, el lector atento habrá visto que en el objeto `context` hemos empezado a cambiar unas propiedades del objeto `state` tal que así:
 
 ```typescript
-context.state.currentState.isLoading = false
+context.stateManager.state.isLoading = false
 ```
 
 Esto es parte de la solución que implementaremos ante el problema de recargar la vista cuando un valor cambia. Porque según nuestra historia de usuario tenemos que representar varios estados del cargando de forma dinámica.
