@@ -2,11 +2,13 @@
 
 [Vue](https://vuejs.org/) es un framework progresivo, versatil y que tiende a la optimización. Opta por la simplicidad en algunos aspectos y adopta cosas de [React](https://reactjs.org/) y [Angular](https://angular.io/). En este post veremos consejos para que tu código con Vue sea impoluto y fácil de testear.
 
+El ejemplo en vivo lo tienes aquí: [https://codesandbox.io/s/rw7jm9ovzo](https://codesandbox.io/s/rw7jm9ovzo) y el código en Github: [https://github.com/cesalberca/gravatar-viewer](https://github.com/cesalberca/gravatar-viewer).
+
 ## 1. Usa TypeScript
 
 [TypeScript](https://www.typescriptlang.org/) te va a ayudar mucho a detectar errores antes de que ejecutes el programa, vas a ser más productivo ya que tu IDE te va a ofrecer más ayudas y tendrás documentación acerca de las estructuras y modelos que usas en tu aplicación.
 
-[Vue da soporte a TypeScript](https://vuejs.org/v2/guide/typescript.html), e incluso [han anunciado con la versión 3](https://medium.com/the-vue-point/plans-for-the-next-iteration-of-vue-js-777ffea6fabf) un rewrite de Vue en TypeScript. Hasta entonces el soporte que dan en ficheros `.vue` deja un poco que desear, ya que dependes de extensiones como Vetur o que tu IDE de un buen soporte.
+[Vue da soporte a TypeScript](https://vuejs.org/v2/guide/typescript.html), e incluso [han anunciado con la versión 3](https://medium.com/the-vue-point/plans-for-the-next-iteration-of-vue-js-777ffea6fabf) un rewrite de Vue en TypeScript. Hasta entonces el soporte que dan en ficheros `.vue` deja un poco que desear, ya que dependes de extensiones como [Vetur](https://github.com/vuejs/vetur) o que tu IDE de un buen soporte.
 
 Por las razones antes mencionadas, y dado que han anunciado que en el nuevo API será orientada a clases y no a objetos yo recomiendo usar [vue-class-component](https://github.com/vuejs/vue-class-component) y [vue-property-decorator](https://github.com/kaorun343/vue-property-decorator). Con estas bibliotecas logramos que nuestro código sea más legible y más seguro en cuanto a tipos. Si usas [Vuex](https://vuex.vuejs.org/guide/) te recomiendo que eches un ojo a [vuex-class](https://github.com/ktsn/vuex-class).
 
@@ -14,7 +16,13 @@ _Nota: Estas bibliotecas están arropadas por Vue. Su creador es un [miembro cor
 
 ## 2. Usa Inject/Provide
 
-[Inject / provide](https://vuejs.org/v2/api/#provide-inject) es una API de Vue para hacer las veces de un contenedor simple de IoC, donde podremos proveer de dependencias dentro de un árbol de componentes a cualquier nivel. Por ejemplo, imaginemos que nuestro componente llama a un [repositorio]():
+[Inject / provide](https://vuejs.org/v2/api/#provide-inject) es una API de Vue para hacer las veces de un contenedor simple de IoC, donde podremos proveer de dependencias dentro de un árbol de componentes a cualquier nivel, lo que evita en cierta medida el denominado [prop drilling](https://blog.kentcdodds.com/prop-drilling-bb62e02cb691).
+
+Un mecanismo análogo en React sería el API de [contexto](https://reactjs.org/docs/context.html).
+
+Ahora veamos cómo lo usaríamos en una mini aplicación que hace peticiones al API de [Libravatar](https://www.libravatar.org/) para mostrar el avatar de un usuario buscando por su email.
+
+Comenzamos imaginando que nuestro componente llama a un [repositorio](https://deviq.com/repository-pattern/):
 
 ```vue
 <template>
@@ -33,21 +41,20 @@ _Nota: Estas bibliotecas están arropadas por Vue. Su creador es un [miembro cor
 </template>
 <script lang="ts">
 import { Component, Vue, Watch } from "vue-property-decorator";
-import { GravatarRepository } from "./../domains/gravatar/repositories/GravatarRepository";
-import { GravatarRepositoryFactory } from "./../domains/gravatar/repositories/GravatarRepositoryFactory";
-import { User } from "./../domains/users/User";
-import * as md5 from "md5";
-import { debounce } from "./../utils/debounce";
+import { GravatarRepository } from "../domains/gravatar/repositories/GravatarRepository";
+import { GravatarRepositoryFactory } from "../domains/gravatar/repositories/GravatarRepositoryFactory";
+import { User } from "../domains/users/User";
+import md5 from "md5";
+import { debounce } from "../utils/debounce";
 
 @Component
 export default class UserComponent extends Vue {
   email: string = "";
   user: User = User.empty();
-  gravatarRepository: GravatarRepository;
-  debouncedQueryEmail: () => void;
+  gravatarRepository: GravatarRepository = GravatarRepositoryFactory.photo();
+  debouncedQueryEmail!: () => void;
 
   created() {
-    this.gravatarRepository = GravatarRepositoryFactory.photo();
     this.debouncedQueryEmail = debounce(this.queryEmail, 1000);
   }
 
@@ -84,9 +91,9 @@ export default class UserComponent extends Vue {
 
 Aquí tendremos un problema muy grande si queremos mañana consumir un repositorio distinto. Tendremos que cambiar _todos_ los componentes donde haya una concreción como la hay cuando se llama a la factoría `GravatarRepositoryFactory.photo()`. 
 
-Además los tests de este componente van a ser insufribles, porque tendremos que de alguna forma mockear el import, ya que no queremos que haga peticiones de verdad en el test unitario.
+Además los tests de este componente van a ser insufribles, porque tendremos que de alguna forma mockear el import, ya que no queremos que haga peticiones de verdad en el test unitario ya que este pasaría de ser unitario a de integración.
 
-_Nota: La función `debounce` hace que un método no se ejecute hasta que pase un tiempo mínimo de 1000ms, lo que evita que hagamos un montón de peticiones al API que peticionamos._
+_Nota: La función `debounce` hace que un método no se ejecute hasta que pase un tiempo mínimo de 1000ms, lo que evita que hagamos un montón de peticiones al API._
 
 Con inject podemos mejorar esta situación:
 
@@ -107,10 +114,10 @@ Con inject podemos mejorar esta situación:
 </template>
 <script lang="ts">
 import { Component, Vue, Watch, Inject } from "vue-property-decorator";
-import { GravatarRepository } from "./../domains/gravatar/repositories/GravatarRepository";
-import { User } from "./../domains/users/User";
-import * as md5 from "md5";
-import { debounce } from "./../utils/debounce";
+import { GravatarRepository } from "../domains/gravatar/repositories/GravatarRepository";
+import { User } from "../domains/users/User";
+import md5 from "md5";
+import { debounce } from "../utils/debounce";
 
 @Component
 export default class UserComponent extends Vue {
@@ -118,9 +125,9 @@ export default class UserComponent extends Vue {
   user: User = User.empty();
 
   @Inject()
-  gravatarRepository: GravatarRepository;
+  gravatarRepository!: GravatarRepository;
 
-  debouncedQueryEmail: () => void;
+  debouncedQueryEmail!: () => void;
 
   created() {
     this.debouncedQueryEmail = debounce(this.queryEmail, 1000);
@@ -157,7 +164,7 @@ export default class UserComponent extends Vue {
 </style>
 ```
 
-El cambio es muy sutil, pero muy efectivo. Ahora nos falta proveer de la implementación de `gravatarRepository`. Para ello nos podemos crear un componente `ProviderFactory` que sea el que se encarga de gestionar la creación de instancias y que las inyecte:
+El cambio es muy sutil, pero muy efectivo. Ahora nos falta proveer de la implementación de `GravatarRepository` (que adelanto que es una interfaz). Para ello nos podemos crear un componente `ProviderFactory` que sea el que se encarga de gestionar la creación de instancias y el que las inyecta:
 
 ```vue
 <template>
@@ -167,6 +174,8 @@ El cambio es muy sutil, pero muy efectivo. Ahora nos falta proveer de la impleme
 import { Component, Vue, Provide } from "vue-property-decorator";
 import { GravatarRepositoryFactory } from "./../domains/gravatar/repositories/GravatarRepositoryFactory";
 import { GravatarRepository } from "./../domains/gravatar/repositories/GravatarRepository";
+import { debounce } from "./../utils/debounce";
+import { hasher } from "./../utils/hasher";
 
 @Component
 export default class ProviderFactory extends Vue {
@@ -180,16 +189,17 @@ Y ahora en el fichero `App.vue` haremos uso de él:
 
 ```vue
 <template>
-  <ProviderFactory> <UserComponentInject /> </ProviderFactory>
+  <ProviderFactory> <AvatarViewerContainer /> </ProviderFactory>
 </template>
+
 <script lang="ts">
 import { Vue, Component } from "vue-property-decorator";
-import * as UserComponentInject from "./components/UserComponentInject";
-import * as ProviderFactory from "./components/ProviderFactory.vue";
+import AvatarViewerContainer from "./components/AvatarViewerContainer.vue";
+import ProviderFactory from "./components/ProviderFactory.vue";
 
 @Component({
   components: {
-    UserComponentInject,
+    AvatarViewerContainer,
     ProviderFactory
   }
 })
@@ -201,13 +211,13 @@ Si mañana tenemos un nuevo repositorio basado en local storage, solamente tendr
 
 El test además sería mucho más fácil, ya que podríamos decir que para el test se haga un provide de un mock.
 
-¿Identificas además otra dependencia en el componente? Sí, el `md5` y el `debounce` es una concreción, si queremos seguir la D de SOLID no deberíamos depender de concreciones si no de abstracciones.
+¿Identificas además otra dependencia en el componente? Sí, el `md5` y el `debounce` son una concreción, si queremos seguir la D de [SOLID](https://en.wikipedia.org/wiki/SOLID) no deberíamos depender de concreciones si no de abstracciones.
 
 ## 3. Usa componentes y contenedores
 
 Los componentes y contenedores no son más que el patrón de diseño [Mediator](https://en.wikipedia.org/wiki/Mediator_pattern). Donde los componentes serán los que se encargar de pintar, podrán tener lógica de pintado, pero muy poca. Reciben datos y los pintas, nada más. Los contenedores son aquellos que orquestan a los componentes y les pasan los datos. Suelen tener más lógica pero no suelen tener ni estilos visuales ni markup.
 
-Los componentes se comunican con los contenedores mediante eventos, y los contenedores se comunican con los componentes mediante props. Esto hace que los tests sean mucho más fáciles, los componentes estén super desacoplados y si falla algo en cuanto a la orquestación, sabremos que tenemos que mirar el contenedor.
+Los componentes se comunican con los contenedores mediante eventos, y los contenedores se comunican con los componentes mediante props. Esto hace que los tests sean mucho más fáciles, los componentes estén más desacoplados y si falla algo en cuanto a la orquestación, sabremos que tenemos que mirar el contenedor.
 
 Como ejemplo vamos a refactorizar nuestro componente `UserComponenteInject`. Creamos primero el componente `AvatarComponent`
 
@@ -220,7 +230,7 @@ Como ejemplo vamos a refactorizar nuestro componente `UserComponenteInject`. Cre
 </template>
 <script lang="ts">
 import { Prop, Component, Vue } from "vue-property-decorator";
-import { User } from "./../domains/users/User";
+import { User } from "../domains/users/User";
 
 @Component
 export default class AvatarComponent extends Vue {
@@ -250,8 +260,8 @@ import { Component, Vue, Emit } from "vue-property-decorator";
 @Component
 export default class UserFormComponent extends Vue {
   @Emit()
-  onEmailChange(event: InputEvent) {
-    return event.target.value;
+  onEmailChange(event: Event) {
+    return (event.target as HTMLInputElement).value;
   }
 }
 </script>
@@ -273,11 +283,12 @@ Y por último creamos `AvatarViewerContainer`:
 </template>
 <script lang="ts">
 import { Component, Vue, Watch, Inject } from "vue-property-decorator";
-import { GravatarRepository } from "./../domains/gravatar/repositories/GravatarRepository";
-import * as UserFormComponent from "./UserFormComponent.vue";
-import * as AvatarComponent from "./AvatarComponent.vue";
-import { User } from "./../domains/users/User";
-import { hasher } from "./../utils/hasher";
+import { GravatarRepository } from "../domains/gravatar/repositories/GravatarRepository";
+import UserFormComponent from "./UserFormComponent.vue";
+import AvatarComponent from "./AvatarComponent.vue";
+import { User } from "../domains/users/User";
+import { debounce } from "../utils/debounce";
+import { hasher } from "../utils/hasher";
 
 @Component({
   components: {
@@ -290,16 +301,15 @@ export default class AvatarViewerContainer extends Vue {
   user: User = User.empty();
 
   @Inject()
-  gravatarRepository: GravatarRepository;
+  gravatarRepository!: GravatarRepository;
 
   @Inject()
-  debounce: typeof debounce;
-  
-  
-  @Inject()
-  hasher: typeof hasher;
+  debounce!: typeof debounce;
 
-  debouncedQueryEmail: () => void;
+  @Inject()
+  hasher!: typeof hasher;
+
+  debouncedQueryEmail!: () => void;
 
   created() {
     this.debouncedQueryEmail = this.debounce(this.queryEmail, 1000);
@@ -315,7 +325,7 @@ export default class AvatarViewerContainer extends Vue {
   }
 
   async queryEmail() {
-    const hash = md5(this.email);
+    const hash = this.hasher(this.email);
     const user = await this.gravatarRepository.getUserByEmailHash(hash);
     this.user = user;
   }
@@ -351,39 +361,39 @@ export default class ProviderFactory extends Vue {
   gravatarRepository: GravatarRepository = GravatarRepositoryFactory.photo();
 
   @Provide()
-  debounce: typeof debounce = debounce;
-  
+  debounce = debounce;
+
   @Provide()
-  hasher: typeof hasher = hasher;
+  hasher = hasher;
 }
 </script>
 ```
 
 ## 4. Haz testing
 
-Como puedes ver en proyecto de ejemplo, todos los componentes y piezas están testadas. Al seguir SOLID y buenas prácticas el añadir test unitarios de todo es trivial.
+Como puedes ver en proyecto de ejemplo, todos los componentes y piezas están testadas. Al seguir SOLID y buenas prácticas el añadir test unitarios de todo lo necesario es trivial.
 
 Por ejemplo veamos el `AvatarViewerContainer.spec.ts`:
 
 ```typescript
-import { Vue } from "vue";
-import * as AvatarViewerContainer from "./../AvatarViewerContainer.vue";
+import Vue from "vue";
+import AvatarViewerContainer from "./../AvatarViewerContainer.vue";
 import { Wrapper, shallowMount } from "@vue/test-utils";
-import { User } from "./../../domains/users/User";
-import { GravatarRepository } from "./../../domains/gravatar/GravatarRepository";
-import { flushPromises } from "./../../utils/flushPromises";
-import { hasher } from "./../../utils/hasher";
-import { debounce } from "./../../utils/debounce";
+import { User } from "../../domains/users/User";
+import { flushPromises } from "../../utils/flushPromises";
+import { hasher } from "../../utils/hasher";
+import { debounce } from "../../utils/debounce";
+import { GravatarRepository } from "../../domains/gravatar/repositories/GravatarRepository";
 
 describe("AvatarViewerContainer", () => {
   let wrapper: Wrapper<Vue>;
-  let gravatarRepositoryMock: jest.Mock<GravatarRepository>;
-  let debounceMock: jest.Mock<typeof debounce>;
-  let hasherMock: jest.Mock<typeof hasher>;
+  let gravatarRepositoryMock: GravatarRepository;
+  let debounceMock: typeof debounce;
+  let hasherMock: typeof hasher;
 
   beforeEach(() => {
     hasherMock = jest.fn();
-    debounceMock = jest.fn((fn: Function) => fn());
+    debounceMock = jest.fn((func: Function) => () => func());
     gravatarRepositoryMock = {
       getUserByEmailHash: jest
         .fn()
@@ -427,7 +437,7 @@ describe("AvatarViewerContainer", () => {
     expect(avatarComponent.props("user").photo).toBe("foo");
   });
 
-  it("should use the hasher", async done => {
+  it("should use the hasher", async () => {
     expect.assertions(1);
 
     const userFormComponent = wrapper.find({ name: "UserFormComponent" });
@@ -435,22 +445,19 @@ describe("AvatarViewerContainer", () => {
     userFormComponent.vm.$emit("on-email-change", "foo@foo.com");
     await flushPromises();
 
-    wrapper.vm.$nextTick(() => {
-      expect(hasherMock).toHaveBeenCalledWith("foo@foo.com");
-      done();
-    });
+    expect(hasherMock).toHaveBeenCalledWith("foo@foo.com");
   });
 });
 ```
 
-O los componentes `AvatarComponent.spec.ts`:
+O el componente `AvatarComponent.spec.ts`:
 
 
 ```typescript
-import { Vue } from "vue";
-import * as AvatarComponent from "./../AvatarComponent.vue";
+import Vue from "vue";
+import AvatarComponent from "../AvatarComponent.vue";
 import { Wrapper, shallowMount } from "@vue/test-utils";
-import { User } from "./../../domains/users/User";
+import { User } from "../../domains/users/User";
 
 describe("AvatarComponent", () => {
   let wrapper: Wrapper<Vue>;
@@ -483,10 +490,9 @@ describe("AvatarComponent", () => {
 Y el `UserFormComponent`:
 
 ```typescript
-import { Vue } from "vue";
-import * as UserFormComponent from "./../UserFormComponent.vue";
-import { Wrapper, shallowMount } from "@vue/test-utils";
-import { User } from "./../../domains/users/User";
+import Vue from "vue";
+import UserFormComponent from "./../UserFormComponent.vue";
+import { shallowMount, Wrapper } from "@vue/test-utils";
 
 describe("UserFormComponent", () => {
   let wrapper: Wrapper<Vue>;
@@ -497,7 +503,7 @@ describe("UserFormComponent", () => {
 
   it("should emit event", () => {
     const input = wrapper.find("input");
-    input.element.value = "foo";
+    (input.element as HTMLInputElement).value = "foo";
     input.trigger("input");
     expect(wrapper.emitted("on-email-change")[0][0]).toEqual("foo");
   });
@@ -513,7 +519,7 @@ Como hemos visto antes en el contenedor `AvatarViewerContainer` había un `Grava
 Veamos más detenidamente `GravatarRepository`:
 
 ```typescript
-import { User } from "./../../users/User";
+import { User } from "../../users/User";
 
 export interface GravatarRepository {
   getUserByEmailHash(hash: string): Promise<User>;
@@ -526,15 +532,15 @@ Aquí está `GravatarBlobRepository`:
 
 ```typescript
 import { GravatarRepository } from "./GravatarRepository";
-import { GravatarResponse } from "./GravatarResponse";
-import { Fetcher } from "./../Fetcher";
-import { User } from "./../../users/User";
+import { User } from "../../users/User";
+import { Fetcher } from "../../Fetcher";
 
 export class GravatarBlobRepository implements GravatarRepository {
   private url: string;
 
   constructor(private readonly fetcher: Fetcher) {
-    this.url = "https://seccdn.libravatar.org/avatar";
+    this.url =
+      "https://cors-anywhere.herokuapp.com/https://seccdn.libravatar.org/avatar";
   }
 
   async getUserByEmailHash(hash: string): Promise<User> {
@@ -550,21 +556,15 @@ Por constructor le hemos pasado un `fetcher`, este es el encargado de recoger lo
 
 
 ```typescript
-export type Fetcher = <Response>(
+export type Fetcher = <Response = any>(
   query: string,
   options?: {
     mode: string;
   }
-) => Promise<{ json: () => Promise<Response> }>;
+) => Promise<{ json: () => Promise<Response>; blob: () => Promise<Response> }>;
 ```
 
-A aquellos que les suene verá que es igualito que el API de [fetch](), que es el que usaremos luego en verdad.
-
-El `GravatarResponse` es un tipo:
-
-```typescript
-export type GravatarResponse = Blob;
-```
+A aquellos que les suene verá que es igualito que el API de [fetch](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API), que es el que usaremos luego en verdad.
 
 Y por último, ¿dónde creamos la instancia de `GravatarBlobRepository`? Pues con una factoría. 
 
@@ -573,10 +573,11 @@ Y por último, ¿dónde creamos la instancia de `GravatarBlobRepository`? Pues c
 ```typescript
 import { GravatarRepository } from "./GravatarRepository";
 import { GravatarBlobRepository } from "./GravatarBlobRepository";
+import { Fetcher } from "../../Fetcher";
 
 export class GravatarRepositoryFactory {
   static photo(): GravatarRepository {
-    const fetcher = window.fetch.bind(window);
+    const fetcher = window.fetch.bind(window) as Fetcher;
     return new GravatarBlobRepository(fetcher);
   }
 }
@@ -601,12 +602,12 @@ export class User {
 }
 ````
 
-Es importante evitar que nuestros modelos sean interfaces sin comportamiento o clases con setters o propiedades públicas, ya que nos pueden llevar a [modelos anémicos](), es decir modelos que son una bolsa de propiedades, siendo imposible determinar cual es su estado válido, delegando en el consumidor la lógica de validez, lo que haría a su vez que duplicásemos esa lógica.
+Es importante evitar que nuestros modelos sean interfaces sin comportamiento o clases con setters o propiedades públicas, ya que nos pueden llevar a [modelos anémicos](https://www.martinfowler.com/bliki/AnemicDomainModel.html), es decir modelos que son una bolsa de propiedades, siendo imposible determinar cual es su estado válido, delegando en el consumidor la lógica de validez, lo que haría a su vez que duplicásemos esa lógica.
 
 ## Conclusión
 
 El front no es fácil. Venimos de un mundo dónde a lo más que podíamos aspirar es a maquetar, aplicar estilos y usar algo de JavaScript para lograr animaciones e interactividad con la página. Todo esto ha cambiado, ahora debemos gestionar un montón de estado, asincronía, optimización de peticiones y caché, diseño responsive, reactividad y un montón más de cosas.
 
-¿Por qué nos privamos de usar las herramientas y mecanismos que se llevan usando en la programación orientada a objetos desde hace más de 20 años?
+¿Por qué nos privamos de usar las herramientas y mecanismos que se llevan usando en la programación orientada a objetos desde hace más de 20 años que se han visto que funcionan?
 
 Sígueme en [Twitter](https://twitter.com/) y en [Github](https://github.com/cesalberca).
