@@ -86,7 +86,7 @@ function configMarked() {
 
 function generateAnchors(renderer) {
   renderer.heading = (text, level) => {
-    const escapedText = text.toLowerCase().replace(/[^\w]+/g, '-')
+    const escapedText = encodeURIComponent(text.toLowerCase()).replace(/%20/g, '+')
 
     return `
           <h${level}>

@@ -1,18 +1,18 @@
+¿SOLID, testing, separación por capas y patrones de diseño en el frontend con Vue y TypeScript? ¿Estamos locos? No, se puede hacer y además te lo enseño en este tutorial.
+<!--more-->
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 ## Índice
 
-- [Haciendo (Vue)n frontend](#haciendo-vuen-frontend)
-  - [1. Usa TypeScript](#1-usa-typescript)
-  - [2. Usa Inject/Provide](#2-usa-injectprovide)
-  - [3. Usa componentes y contenedores](#3-usa-componentes-y-contenedores)
-  - [4. Haz testing](#4-haz-testing)
+- [1. Usa TypeScript](#1-usa-typescript)
+- [2. Usa Inject/Provide](#2-usa-injectprovide)
+- [3. Usa componentes y contenedores](#3-usa-componentes-y-contenedores)
+- [4. Haz testing](#4-haz-testing)
 - [5. Mueve lógica de negocio fuera de los componentes](#5-mueve-l%C3%B3gica-de-negocio-fuera-de-los-componentes)
-  - [Conclusión](#conclusi%C3%B3n)
+- [Conclusión](#conclusi%C3%B3n)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
-
-# Haciendo (Vue)n frontend
 
 [Vue](https://vuejs.org/) es un framework progresivo, versatil y que tiende a la optimización. Opta por la simplicidad en algunos aspectos y adopta cosas de [React](https://reactjs.org/) y [Angular](https://angular.io/). En este post veremos consejos para que tu código con Vue sea impoluto y fácil de testear.
 
@@ -526,7 +526,7 @@ describe("UserFormComponent", () => {
 
 No hacer testing __nunca__ está justificado.
 
-# 5. Mueve lógica de negocio fuera de los componentes
+## 5. Mueve lógica de negocio fuera de los componentes
 
 Como hemos visto antes en el contenedor `AvatarViewerContainer` había un `GravatarRepository`. Básicamente este repositorio luego por debajo se conecta con un API y te devuelve la imagen del usuario. Podríamos hacer la llamada en el contenedor directamente, pero estaríamos acoplando nuestra obtención de datos con un framework (Vue) y romperíamos SOLID, ya que el motivo de cambio del contenedor es que la interacción cambie o que el API cambie.
 
