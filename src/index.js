@@ -141,7 +141,7 @@ function generateIndexes() {
 function minimizeImages() {
   console.log('Minimizing images...'.blue)
   return imagemin(['./imgs/**/*.{jpg,png}'], './dist/imgs', {
-    plugins: [imageminJpegtran(), imageminPngquant({ quality: '65-80' })]
+    plugins: [imageminJpegtran(), imageminPngquant({ quality: '65-80' })],
   }).then(images => {
     console.log(`Minimized ${images.length} images` + ' succesfully'.green + '\n')
     return
@@ -152,7 +152,7 @@ function minimizeGifs() {
   console.log('Minimizing gifs...'.blue)
   return imagemin(['./imgs/**/*.gif'], './dist/imgs', {
     optimizationLevel: 3,
-    use: [imageminGifsicle()]
+    use: [imageminGifsicle()],
   }).then(images => {
     console.log(`Minimized ${images.length} images` + ' succesfully'.green + '\n')
   })
