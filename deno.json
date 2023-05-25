@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "std/": "https://deno.land/std@0.189.0/",
+    "markdown/": "https://deno.land/x/gfm@0.2.3/",
+    "colors": "https://deno.land/std@0.189.0/fmt/colors.ts",
+    "imagemick": "https://deno.land/x/imagemagick_deno@0.0.22/mod.ts"
+  },
+  "tasks": {
+    "build": "deno run --allow-write --allow-read src/index.ts"
+  }
+}
