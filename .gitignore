@@ -1,7 +1,7 @@
 node_modules
-dist/*
-!dist/.gitkeep
-!posts/.gitkeep
+src/dist/*
+!src/dist/.gitkeep
+!src/posts/.gitkeep
 **/.DS_STORE
 ### macOS template
 # General
