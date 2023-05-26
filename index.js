@@ -1,12 +1,16 @@
-require('colors')
-const npmRun = require('npm-run')
-const marked = require('marked')
-const fs = require('mz/fs')
-const path = require('path')
-const imagemin = require('imagemin')
-const imageminJpegtran = require('imagemin-jpegtran')
-const imageminPngquant = require('imagemin-pngquant')
-const imageminGifsicle = require('imagemin-gifsicle')
+import 'colors'
+import npmRun from 'npm-run'
+import { marked } from 'marked'
+import path from 'path'
+import { fileURLToPath } from 'url'
+import fs from 'fs/promises'
+import imagemin from 'imagemin'
+import imageminJpegtran from 'imagemin-jpegtran'
+import imageminPngquant from 'imagemin-pngquant'
+import imageminGifsicle from 'imagemin-gifsicle'
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const input = 'posts'
 const output = 'dist'
@@ -15,7 +19,6 @@ const imagesUploadPath = 'https://www.adictosaltrabajo.com/wp-content/uploads/'
 init()
 
 async function init() {
-  await createOutputDirIfNeeded()
   configMarked()
   await generateIndexes()
   await minimizeImages()
@@ -29,15 +32,6 @@ async function init() {
   let postsPromise = posts.map(convertPost)
   await Promise.all(postsPromise)
   console.log('\n DONE '.black.bgGreen + '\n')
-}
-
-async function createOutputDirIfNeeded() {
-  const doesDirExist = await fs.exists(path.resolve(__dirname, output))
-
-  if (!doesDirExist) {
-    await fs.mkdir(path.resolve(__dirname, output))
-    return await fs.writeFile(path.resolve(__dirname, output, '.gitkeep'), '')
-  }
 }
 
 function configMarked() {
@@ -81,7 +75,7 @@ function configMarked() {
     return out
   }
 
-  marked.setOptions({ renderer: myRenderer })
+  marked.setOptions({ renderer: myRenderer, mangle: false,headerIds: false })
 }
 
 function generateAnchors(renderer) {
