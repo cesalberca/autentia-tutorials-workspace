@@ -2,9 +2,9 @@
 
 ![IMG20230519205505.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230519205505.jpg)
 
-Llega otro año nuevo y con ello nueva edición de uno de mis eventos favoritos: [JSDay Canarias 2023](https://jsdaycanarias.com/). Este año cuento con la suerte de presentar charla junto a [Adrián Ferrera](https://adrianferrera.dev/es). En la charla hablaremos de cómo hacer código que haría vomitar a una cabra 🐐. Si estás por el evento y te apetece verla, será el **domingo 28 de mayo en el Track 1 a las 12:15** (una hora más en la península 😉).
+Llega otro año nuevo y con ello nueva edición de uno de mis eventos favoritos: [JSDay Canarias 2023](https://jsdaycanarias.com/). Este año conté con la suerte de presentar charla junto a [Adrián Ferrera](https://adrianferrera.dev/es). En la charla hablamos de cómo hacer código que haría vomitar a una cabra 🐐.
 
-Este año, unos pocos compis ([Luis Merino](https://twitter.com/luismeruli), [Rubén Yañez](https://twitter.com/conrderuben1) y yo) decidimos organizar una estancia un poco más larga en la isla y alquilamos un piso durante 1 mes en [Puerto de la Cruz](https://goo.gl/maps/V7KQwqkVR6931DEX8). Durante ese mes estaríamos teletrabajando, una de las muchas flexibilidades que aporta trabajar en Autentia. Puerto de la Cruz, además, justo está cerca de otro compañero, [Germán Delgado](https://twitter.com/GermanDG6). Aprovechamos para disfrutar y explorar de la isla juntos. Estas son algunas de las cosas que hicimos:
+Este año, ([Luis Merino](https://twitter.com/luismeruli), [Rubén Yañez](https://twitter.com/conrderuben1) y yo) decidimos organizar una estancia un poco más larga en la isla y alquilamos un piso durante 1 mes en [Puerto de la Cruz](https://goo.gl/maps/V7KQwqkVR6931DEX8). Durante ese mes estaríamos teletrabajando, una de las muchas flexibilidades que aporta trabajar en Autentia. Puerto de la Cruz, además, está cerca de donde vive otro compañero, [Germán Delgado](https://twitter.com/GermanDG6). Aprovechamos para disfrutar y explorar de la isla juntos. Estas son algunas de las cosas que hicimos:
 
 ## Ruta por Chinyero
 
@@ -100,7 +100,7 @@ Fran Palacios nos habló acerca de Web3 y cómo podemos demistificar este nuevo 
 
 ![img.png](..%2Fimgs%2Froad-to-jsday-canarias-2023%2Fimg.png)
 
-Más tarde, tuve el honor de dar una charla junto a Adrián Ferrera. En lugar de centrarnos en cómo construir software "bueno", optamos por un enfoque un tanto inusual y decidimos hablar sobre cómo construir "mal" software. A través de este contrapunto, buscamos ilustrar los errores comunes, las trampas y los malentendidos que pueden surgir en el proceso de desarrollo de software. Con humor (o eso intentamos), tratamos de ofrecer valiosas lecciones aprendidas de nuestros propios fracasos y éxitos en el campo. La charla fue bien recibida, con los asistentes participando activamente en la discusión. Esta será la charla que demos en JSDay Canarias.
+Más tarde, Adrián Ferrera y yo pudimos practicar nuestra charla "101. How to build Bad Software", que días más tarde daríamos en la JSDay Canarias. En lugar de centrarnos en cómo construir software "bueno", optamos por un enfoque un tanto inusual y decidimos hablar sobre cómo construir "mal" software. A través de este contrapunto, buscamos ilustrar los errores comunes, las trampas y los malentendidos que pueden surgir en el proceso de desarrollo de software. Con humor (o eso intentamos), tratamos de ofrecer valiosas lecciones aprendidas de nuestros propios fracasos y éxitos en el campo. La charla fue bien recibida, con los asistentes participando activamente en la discusión.
 
 ![img_1.png](..%2Fimgs%2Froad-to-jsday-canarias-2023%2Fimg_1.png)
 
@@ -110,7 +110,73 @@ Es más, todo el mundo sabe que lo importante de los eventos es el _post evento_
 
 ![IMG20230524212019.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230524212019.jpg)
 
+## JSDay Canarias 2023
+
+¡Y comenzamos con el evento! Este año el evento contaba con un ambiente mucho más internacional, con 26 charlas en inglés y 9 en español. Como cabeza de cartel tuvimos el privilegio de contar con figuras como [Kent C. Dodds](https://kentcdodds.com/), [Tejas Kumar](https://tej.as/), [Sandrina Pereira](https://www.sandrina-p.net/) y [muchos otros](https://jsdaycanarias.com/speakers)!
+
+El evento tuvo lugar en [La Universidad de La Laguna](https://www.google.com/maps/search/28.468627,+-16.303659?shorturl=1), en el campus Guajara.
+
+Kent C. Dodds estrenó el escenario con su charla Making Felix Felicis donde nos habla de cómo fabricar nuestra propia suerte.
+
+![IMG20230527090405.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527090405.jpg)
+
+Siguiendo sus consejos en la charla, probamos suerte y tuvo la amabilidad de hacerse una foto con nosotros.
+
+![IMG20230527104902.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527104902.jpg)
+
+Tejas nos contó cómo usar Zod y tRPC, unas tecnologías que se compenetra muy bien y permiten tener tipado llamadas y respuestas de un backend usando el protocolo RPC.
+
+![IMG20230527100847.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527100847.jpg)
+
+Anna Salas nos contó cómo usa Storybook y los plugins que suele utilizar en su día a día para hacer Design Systems.
+
+![IMG20230527112607.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527112607.jpg)
+
+Braulio Diez y Daniel Sánchez profundizaron en temas de rendering y de cómo los frameworks más novedosos usan "surgical updates" para ser más eficientes.
+
+![IMG20230527122108.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527122108.jpg)
+
+Tuvimos también un panel tecnológico con grandes personalidades como: Kent C. Dodds, Aleksandra Sikora, Adrián Bolonio y Natalia Rocha.
+
+![IMG20230527132910.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527132910.jpg)
+
+Jorge Aguiar Martin completó la primera jornada hablándonos de cómo mejorar nuestros tests con Jest añadiendo métodos al objeto expect para que estos sean más semánticos.
+
+![IMG20230527160816.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527160816.jpg)
+
+No podía faltar una visita al Bola 8, donde pudimos coincidir con gente del evento e incluso tuvimos un arduo partido de futbolín con el equipo de Lean Mind.
+
+![IMG20230527202819.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527202819.jpg)
+![IMG20230527204305.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230527204305.jpg)
+
+En la segunda jornada Fernanda Andrade nos habló de herramientas de testing aplicadas a tipos.
+
+![img.png](../imgs/road-to-jsday-canarias-2023/fenrnada-andrade.png)
+
+José Manuel Lucas hizo de un tema complejo como es la programación funcional fácil de entender usando fp-ts.
+
+![IMG20230528113901.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230528113901.jpg)
+
+A continuación Adrián Ferrera y yo dimos nuestra charla "101. How to build bad Software", donde hablábamos de cómo hacer código que haría vomitar a una cabra.
+
+![img.png](../imgs/road-to-jsday-canarias-2023/bad-software.png)
+
+Tally Barak nos habló en su charla acerca de Monorepos y qué estrategias seguir para usar la herramienta correcta.
+
+![IMG20230528132444.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230528132444.jpg)
+
+Y por último Thomas Steiner nos contó cómo usar Web SQL para crear aplicaciones web con bases de datos en el front.
+
+![IMG20230528151424.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230528151424.jpg)
+
+Estas fueron algunas de las charlas a la que pude asistir, habiendo [muchas otras](https://jsdaycanarias.com/agenda) igual de interesantes y apasionantes.
+
+Y por supuesto no podía faltar el post-evento donde esta vez fuimos al Rincón de Tintín y nos juntamos con un grupazo de gente donde pudimos compartir incluso más experiencias y charlas enriquecedoras.
+
+![IMG20230528181035.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230528181035.jpg)
 
 ## Conclusión
 
-En resumen, nuestras aventuras en Tenerife nos permitieron explorar la diversidad natural y cultural de la isla. Desde los senderos de Chinyero hasta la excursión al Draguillo y la ascensión nocturna al pico del Teide, cada experiencia supera a la anterior y estamos listos para acabar en el gran colofón que será la JSDay Canarias. ¡Nos vemos!
+En resumen, nuestras aventuras en Tenerife nos permitieron explorar la diversidad natural y cultural de la isla. Desde los senderos de Chinyero hasta la excursión al Draguillo y la ascensión nocturna al pico del Teide. Suplimos el aspecto cultural y deportivo con jornadas de compartir conocimiento y estrechar lazos con las muchas magníficas personas que coincidimos. ¡Hasta la próxima Canarias!
+
+![IMG20230528162904.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230528162904.jpg)
