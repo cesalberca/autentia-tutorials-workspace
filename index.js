@@ -5,9 +5,9 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import fs from 'fs/promises'
 import imagemin from 'imagemin'
-import imageminJpegtran from 'imagemin-jpegtran'
 import imageminPngquant from 'imagemin-pngquant'
 import imageminGifsicle from 'imagemin-gifsicle'
+import imageminMozjpeg from 'imagemin-mozjpeg'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -134,18 +134,20 @@ function generateIndexes() {
 
 function minimizeImages() {
   console.log('Minimizing images...'.blue)
-  return imagemin(['./imgs/**/*.{jpg,png}'], './dist/imgs', {
-    plugins: [imageminJpegtran(), imageminPngquant({ quality: '65-80' })],
+  return imagemin(['./imgs/**/*.{jpg,png}'],  {
+    plugins: [imageminMozjpeg({
+      maxMemory: 2000,
+    }), imageminPngquant()],
+    destination: './dist/imgs'
   }).then(images => {
     console.log(`Minimized ${images.length} images` + ' succesfully'.green + '\n')
-    return
   })
 }
 
 function minimizeGifs() {
   console.log('Minimizing gifs...'.blue)
-  return imagemin(['./imgs/**/*.gif'], './dist/imgs', {
-    optimizationLevel: 3,
+  return imagemin(['./imgs/**/*.gif'],  {
+    destination: './dist/imgs',
     use: [imageminGifsicle()],
   }).then(images => {
     console.log(`Minimized ${images.length} images` + ' succesfully'.green + '\n')

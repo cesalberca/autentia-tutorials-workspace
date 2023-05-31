@@ -1,3 +1,18 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Índice
+
+- [Road to JSDay Canarias 2023](#road-to-jsday-canarias-2023)
+  - [Ruta por Chinyero](#ruta-por-chinyero)
+  - [Ruta por Benijo](#ruta-por-benijo)
+  - [Ruta por el Teide](#ruta-por-el-teide)
+  - [Visitar oficinas de Lean Mind](#visitar-oficinas-de-lean-mind)
+  - [Meetup Agile Canarias](#meetup-agile-canarias)
+  - [JSDay Canarias 2023](#jsday-canarias-2023)
+  - [Conclusión](#conclusi%C3%B3n)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Road to JSDay Canarias 2023
 
 ![IMG20230519205505.jpg](..%2Fimgs%2Froad-to-jsday-canarias-2023%2FIMG20230519205505.jpg)
