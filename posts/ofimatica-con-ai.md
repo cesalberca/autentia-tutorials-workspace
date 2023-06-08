@@ -1,3 +1,15 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+## Índice
+
+- [Ofimática con IA](#ofim%C3%A1tica-con-ia)
+  - [Introducción](#introducci%C3%B3n)
+  - [Suite de Microsoft](#suite-de-microsoft)
+  - [Suite de Google](#suite-de-google)
+  - [Futuro](#futuro)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Ofimática con IA
 
 ## Introducción
@@ -20,15 +32,15 @@ Las apps de Microsoft 365 envían el contexto a Microsoft Graph, que a su vez lo
 
 Outlook integrará IA para generar texto para un email basándonos en el sentimiento del usuario, donde se podrá marcar con qué tono se quiere generar la respuesta.
 
-![](../imgs/ofimatica-ia/img.png)
+![](../imgs/ofimatica-ia/coaching-copilot-outlook.png)
 
 En la parte de presentaciones también se puede usar para generar diapositivas a partir de un texto, para que estas sean más visuales y dinámicas
 
-![](../imgs/ofimatica-ia/img_1.png)
+![](../imgs/ofimatica-ia/copilot-powerpoint.png)
 
 A la hora de escribir podremos pedirle a Copilot que ofrezca distintas variaciones del texto, incluso pudiendo sintetizar la idea en una lista de puntos.
 
-![](../imgs/ofimatica-ia/img_5.png)
+![](../imgs/ofimatica-ia/copilot-powerpoint2.png)
 
 ## Suite de Google
 
